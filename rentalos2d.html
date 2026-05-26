@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RENTALOS — Presta. Pide. Conecta.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,600&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════
+   TOKENS & RESET
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Brand — terracota refinada */
+  --or:#C85A24;--or2:#D9724A;--or-pale:#FBF0E9;--or-dark:#9E3E14;
+  --or-glow:rgba(200,90,36,.18);--or-subtle:rgba(200,90,36,.07);
+
+  /* Greens — selva suave */
+  --gr:#286049;--gr2:#347B5E;--gr-pale:#EBF4EF;--gr-glow:rgba(40,96,73,.15);
+
+  /* Neutrals — warm biased, light mode */
+  --blk:#18100C;--wht:#FDFAF7;
+  --bg:#F6F2EC;--bg2:#FDFAF7;--bg3:#EDE8DF;--bg4:#E3DDD3;
+  --tx:#18100C;--tx2:#4E4038;--tx3:#8E8078;--tx4:#BDB5AC;
+
+  /* Borders — warm tinted */
+  --bdr:rgba(24,16,12,.08);--bdr2:rgba(24,16,12,.14);--bdr3:rgba(24,16,12,.22);
+
+  /* Radius */
+  --r:14px;--r-sm:9px;--r-xs:5px;--r-pill:999px;
+
+  /* Layout */
+  --nav:64px;--max:1240px;
+
+  /* Motion — Emil-style custom easing */
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease-in-out:cubic-bezier(0.77,0,0.175,1);
+  --ease-drawer:cubic-bezier(0.32,0.72,0,1);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+
+  /* Fonts */
+  --f-display:'Fraunces',Georgia,serif;
+  --f-head:'Syne',sans-serif;
+  --f-body:'DM Sans',sans-serif;
+}
+
+[data-theme=dark]{
+  --bg:#0E0B08;--bg2:#161009;--bg3:#1E1610;--bg4:#261C14;
+  --tx:#EEE8DF;--tx2:#7A7068;--tx3:#524840;--tx4:#342C24;
+  --bdr:rgba(238,232,223,.07);--bdr2:rgba(238,232,223,.13);--bdr3:rgba(238,232,223,.21);
+  --or-pale:rgba(200,90,36,.11);--gr-pale:rgba(40,96,73,.11);
+  --blk:#0A0806;
+}
+
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{font-family:var(--f-body);background:var(--bg);color:var(--tx);overflow-x:hidden;transition:background 400ms var(--ease),color 400ms var(--ease);font-size:16px;line-height:1.6}
+::selection{background:var(--or-pale);color:var(--or)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--or);border-radius:2px;opacity:.6}
+img{display:block;max-width:100%}
+button{font-family:var(--f-body);cursor:pointer}
+input,select,textarea{font-family:var(--f-body)}
+a{text-decoration:none}
+
+
+/* ══════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════ */
+#ldr{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--blk);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;
+  transition:opacity .6s var(--ease)
+}
+#ldr.done{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .6s var(--ease),visibility 0s .6s}
+.ldr-wordmark{
+  font-family:var(--f-display);font-size:42px;color:var(--or);font-weight:300;
+  letter-spacing:-1.5px;display:flex;align-items:center;gap:14px
+}
+.ldr-r{
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid var(--or);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:18px;font-weight:700;color:var(--or)
+}
+.ldr-track{width:160px;height:1px;background:rgba(255,255,255,.1);overflow:hidden;border-radius:1px}
+.ldr-fill{height:100%;background:var(--or);width:0;transition:width .05s linear}
+.ldr-pct{font-family:var(--f-head);font-size:11px;color:rgba(255,255,255,.3);letter-spacing:3px}
+
+
+/* ══════════════════════════════════════════
+   PROGRESS BAR
+══════════════════════════════════════════ */
+#rp{position:fixed;top:0;left:0;height:2px;background:var(--or);z-index:5000;width:0;transition:width .1s}
+
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+  background:rgba(246,242,236,.94);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border-bottom:1px solid var(--bdr);
+  transition:background 300ms var(--ease),box-shadow 300ms var(--ease)
+}
+[data-theme=dark] nav{background:rgba(14,11,8,.94)}
+nav.scrolled{box-shadow:0 1px 0 var(--bdr2),0 4px 24px rgba(24,16,12,.06)}
+
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  transition:opacity 200ms var(--ease)
+}
+@media(hover:hover) and (pointer:fine){
+  .nav-logo:hover{opacity:.7}
+  .nav-logo:hover .logo-mark{background:var(--or);color:#fff}
+}
+.logo-mark{
+  width:32px;height:32px;border-radius:50%;
+  border:1.5px solid var(--or);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-size:15px;font-weight:600;color:var(--or);
+  flex-shrink:0;
+  transition:background 180ms var(--ease),color 180ms var(--ease)
+}
+.logo-text{font-family:var(--f-display);font-size:20px;color:var(--tx);letter-spacing:-.5px;font-weight:400}
+.logo-text span{color:var(--or)}
+.logo-domain{font-family:var(--f-body);font-size:11px;font-weight:400;color:var(--tx3);margin-left:1px}
+
+.nav-center{display:flex;align-items:center;gap:4px}
+.nav-link{
+  font-family:var(--f-head);font-size:13px;font-weight:500;
+  color:var(--tx2);padding:7px 14px;border-radius:var(--r-pill);
+  transition:color 150ms var(--ease),background 150ms var(--ease);letter-spacing:.3px
+}
+@media(hover:hover) and (pointer:fine){
+  .nav-link:hover{color:var(--tx);background:var(--bg3)}
+}
+
+.nav-r{display:flex;align-items:center;gap:8px}
+
+/* User avatar in nav */
+.nav-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--or);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:12px;font-weight:700;
+  cursor:pointer;border:2px solid transparent;
+  flex-shrink:0;
+  position:relative
+}
+.nav-avatar{
+  transition:border-color 160ms var(--ease),transform 160ms var(--ease)
+}
+@media(hover:hover) and (pointer:fine){
+  .nav-avatar:hover{border-color:var(--or);transform:scale(1.05)}
+}
+.nav-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+
+/* User dropdown */
+.user-menu{
+  position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--bg2);border:1px solid var(--bdr2);
+  border-radius:var(--r);padding:8px;min-width:204px;
+  box-shadow:0 12px 40px rgba(24,16,12,.12),0 2px 12px rgba(24,16,12,.06);
+  opacity:0;pointer-events:none;
+  transform:translateY(-6px) scale(.97);
+  transform-origin:top right;
+  transition:opacity 180ms var(--ease),transform 180ms var(--ease);
+  z-index:100
+}
+.user-menu.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1)}
+.um-header{padding:10px 12px 14px;border-bottom:1px solid var(--bdr);margin-bottom:6px}
+.um-name{font-family:var(--f-head);font-weight:600;font-size:14px;color:var(--tx)}
+.um-phone{font-size:12px;color:var(--tx3);margin-top:2px}
+.um-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--r-sm);
+  font-size:13px;color:var(--tx2);cursor:pointer;
+  transition:background 140ms var(--ease),color 140ms var(--ease);
+  border:none;background:transparent;width:100%;text-align:left;
+  font-family:var(--f-body)
+}
+@media(hover:hover) and (pointer:fine){
+  .um-item:hover{background:var(--bg3);color:var(--tx)}
+  .um-item.danger:hover{background:rgba(220,38,38,.08);color:#DC2626}
+}
+.um-ico{font-size:15px;flex-shrink:0}
+.um-divider{height:1px;background:var(--bdr);margin:6px 0}
+
+
+/* ══════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════ */
+.btn{
+  font-family:var(--f-head);font-size:13px;font-weight:600;
+  padding:9px 20px;border-radius:var(--r-pill);
+  cursor:pointer;border:1.5px solid transparent;
+  transition:background 180ms var(--ease),border-color 180ms var(--ease),
+             color 180ms var(--ease),transform 160ms var(--ease),
+             box-shadow 180ms var(--ease);
+  display:inline-flex;align-items:center;gap:7px;
+  letter-spacing:.3px;background:transparent;white-space:nowrap
+}
+.btn:active{transform:scale(0.97) !important}
+@media(hover:hover) and (pointer:fine){
+  .btn-ghost:hover{border-color:var(--or);color:var(--or);background:var(--or-subtle)}
+  .btn-solid:hover{background:var(--or);border-color:var(--or);transform:translateY(-1px);box-shadow:0 6px 20px var(--or-glow)}
+  .btn-or:hover{background:var(--or-dark);border-color:var(--or-dark);transform:translateY(-1px);box-shadow:0 6px 20px var(--or-glow)}
+  .btn-gr:hover{background:var(--gr2);border-color:var(--gr2);transform:translateY(-1px)}
+  .btn-icon:hover{border-color:var(--or);color:var(--or);background:var(--or-subtle)}
+}
+.btn-ghost{color:var(--tx2);border-color:var(--bdr2)}
+.btn-solid{background:var(--tx);color:var(--bg2);border-color:var(--tx)}
+[data-theme=dark] .btn-solid{background:var(--tx);color:var(--bg)}
+.btn-or{background:var(--or);color:#fff;border-color:var(--or)}
+.btn-gr{background:var(--gr);color:#fff;border-color:var(--gr)}
+.btn-lg{font-size:15px;padding:13px 32px}
+.btn-sm{font-size:12px;padding:7px 16px}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:50%;border:1.5px solid var(--bdr2);color:var(--tx2);display:flex;align-items:center;justify-content:center;font-size:15px;
+  transition:background 150ms var(--ease),border-color 150ms var(--ease),color 150ms var(--ease)}
+.btn-icon.active{background:var(--or);border-color:var(--or);color:#fff}
+
+
+/* ══════════════════════════════════════════
+   HERO — Editorial magazine style
+══════════════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  padding:calc(var(--nav) + 72px) 40px 96px;
+  position:relative;overflow:hidden;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:56px;
+  align-items:center;
+  max-width:var(--max);margin:0 auto
+}
+
+/* Textured warm background */
+.hero-backdrop{
+  position:fixed;inset:0;z-index:-1;
+  background:var(--bg);
+}
+.hero-backdrop::before{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.4
+}
+
+.hero-left{position:relative;z-index:1}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--or-pale);color:var(--or);
+  border:1px solid rgba(212,98,42,.22);
+  font-family:var(--f-head);font-size:11px;font-weight:700;
+  padding:5px 13px;border-radius:var(--r-pill);
+  margin-bottom:28px;letter-spacing:.8px;text-transform:uppercase;
+  opacity:0;transform:translateY(14px);animation:rise .6s var(--ease) forwards .2s
+}
+.eyebrow-dot{
+  width:5px;height:5px;background:var(--or);border-radius:50%;
+  animation:pulse 2s ease infinite
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:.5}}
+
+.hero-headline{
+  font-family:var(--f-display);
+  font-size:clamp(56px,7.5vw,96px);
+  line-height:.92;letter-spacing:-.8px;
+  font-weight:300;
+  color:var(--tx);margin-bottom:24px;
+  opacity:0;transform:translateY(28px);animation:rise .8s var(--ease) forwards .4s
+}
+.hero-headline em{color:var(--or);font-style:italic}
+.hero-headline .hl-gr{color:var(--gr)}
+
+.hero-sub{
+  font-size:17px;color:var(--tx2);line-height:1.72;
+  max-width:420px;margin-bottom:44px;font-weight:300;
+  opacity:0;transform:translateY(14px);animation:rise .7s var(--ease) forwards .6s
+}
+
+.hero-ctas{
+  display:flex;gap:10px;flex-wrap:wrap;
+  opacity:0;transform:translateY(14px);animation:rise .6s var(--ease) forwards .8s
+}
+
+.hero-trust{
+  margin-top:40px;display:flex;align-items:center;gap:20px;
+  opacity:0;animation:rise .6s var(--ease) forwards 1s
+}
+.trust-avatars{display:flex}
+.trust-ava{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--or-pale);border:2px solid var(--bg2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--or);
+  margin-left:-8px;font-family:var(--f-head);flex-shrink:0
+}
+.trust-ava:first-child{margin-left:0}
+.trust-txt{font-size:13px;color:var(--tx3);line-height:1.4}
+.trust-txt strong{color:var(--tx);font-weight:600}
+.trust-sep{width:1px;height:24px;background:var(--bdr2);flex-shrink:0}
+
+/* Hero right — visual panel */
+.hero-right{
+  position:relative;z-index:1;
+  opacity:0;transform:translateX(32px);animation:slideL .9s var(--ease) forwards .5s
+}
+@keyframes slideL{to{opacity:1;transform:translateX(0)}}
+
+.hero-card-stack{position:relative;height:480px}
+
+.hcard{
+  position:absolute;
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:var(--r);overflow:hidden;
+  box-shadow:0 20px 60px rgba(26,20,16,.1)
+}
+.hcard-1{
+  width:78%;right:0;top:0;
+  animation:float1 7s ease-in-out infinite
+}
+.hcard-2{
+  width:60%;left:0;bottom:0;
+  animation:float2 8s ease-in-out infinite;
+  box-shadow:0 12px 40px rgba(26,20,16,.12)
+}
+@keyframes float1{0%,100%{transform:translateY(0) rotate(1.5deg)}50%{transform:translateY(-12px) rotate(.5deg)}}
+@keyframes float2{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(-1deg)}}
+
+.hcard-img{
+  width:100%;aspect-ratio:4/3;
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;position:relative;overflow:hidden
+}
+.hcard-img::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,rgba(26,20,16,.06))
+}
+.hcard-body{padding:14px 16px 16px}
+.hcard-tag{
+  font-family:var(--f-head);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--or);margin-bottom:5px;display:block
+}
+.hcard-title{font-family:var(--f-head);font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px}
+.hcard-loc{font-size:11px;color:var(--tx3)}
+.hcard-meta{
+  display:flex;align-items:center;gap:6px;margin-top:10px;
+  padding-top:10px;border-top:1px solid var(--bdr)
+}
+.hcard-ava{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--or-pale);color:var(--or);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:9px;font-weight:700;flex-shrink:0
+}
+.hcard-owner{font-size:11px;color:var(--tx3)}
+.hcard-wa{
+  margin-left:auto;background:#25D366;color:#fff;
+  border:none;border-radius:var(--r-xs);
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  padding:5px 10px;display:flex;align-items:center;gap:5px;cursor:pointer;
+  transition:background .2s
+}
+.hcard-wa:hover{background:#1ebe58}
+.hcard-wa{transition:background 150ms var(--ease)}
+
+/* Floating badge */
+.hero-badge{
+  position:absolute;top:28px;left:-16px;
+  background:var(--gr);color:#fff;
+  border-radius:var(--r);padding:12px 16px;
+  box-shadow:0 12px 36px var(--gr-glow);
+  font-family:var(--f-head);font-size:13px;font-weight:700;
+  animation:float2 6s ease-in-out infinite;z-index:10
+}
+.hero-badge-num{font-family:var(--f-display);font-size:28px;color:#fff;display:block;line-height:1;font-weight:300}
+.hero-badge-lbl{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px;display:block;letter-spacing:.5px;text-transform:uppercase}
+
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+
+
+/* ══════════════════════════════════════════
+   SEARCH SECTION
+══════════════════════════════════════════ */
+.search-s{
+  background:var(--bg2);
+  border-top:1px solid var(--bdr);
+  border-bottom:1px solid var(--bdr);
+  padding:60px 40px
+}
+.s-wrap{max-width:780px;margin:0 auto}
+.s-label{
+  display:block;
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2.5px;color:var(--or);
+  margin-bottom:12px
+}
+.s-box{
+  display:flex;gap:10px;align-items:center;
+  background:var(--bg);border:1.5px solid var(--bdr2);
+  border-radius:var(--r);padding:7px 7px 7px 18px;
+  transition:border-color .2s,box-shadow .2s;margin-bottom:16px
+}
+.s-box{transition:border-color 160ms var(--ease),box-shadow 160ms var(--ease)}
+.s-box:focus-within{border-color:var(--or);box-shadow:0 0 0 3px var(--or-glow)}
+.s-box input{
+  flex:1;border:none;outline:none;background:transparent;
+  font-family:var(--f-body);font-size:16px;color:var(--tx);font-weight:300
+}
+.s-box input::placeholder{color:var(--tx4)}
+.s-ico{font-size:18px;color:var(--tx4);flex-shrink:0}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  font-family:var(--f-head);font-size:12px;font-weight:600;
+  padding:7px 15px;border-radius:var(--r-pill);
+  border:1.5px solid var(--bdr2);background:transparent;
+  color:var(--tx3);cursor:pointer;
+  transition:border-color 150ms var(--ease),color 150ms var(--ease),background 150ms var(--ease);
+  letter-spacing:.3px
+}
+.chip.on{border-color:var(--or);color:var(--or);background:var(--or-pale)}
+@media(hover:hover) and (pointer:fine){.chip:hover{border-color:var(--or);color:var(--or);background:var(--or-pale)}}
+
+
+/* ══════════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════════ */
+.sec{padding:88px 40px;max-width:var(--max);margin:0 auto}
+.sec-full{padding:88px 40px}
+.sec-hd{margin-bottom:52px}
+.sec-hd.centered{text-align:center}
+.eyebrow{
+  display:block;
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:3px;color:var(--or);margin-bottom:10px;
+  opacity:.9
+}
+.sec-title{
+  font-family:var(--f-display);
+  font-size:clamp(32px,4vw,50px);
+  letter-spacing:-.5px;color:var(--tx);line-height:1.02;font-weight:300
+}
+.sec-sub{
+  font-size:16px;color:var(--tx2);line-height:1.7;
+  margin-top:12px;font-weight:300;max-width:520px
+}
+.sec-hd.centered .sec-sub{margin:12px auto 0}
+
+[data-rv]{opacity:0;transform:translateY(20px);
+  transition:opacity 600ms var(--ease),transform 600ms var(--ease)}
+[data-rv].shown{opacity:1;transform:translateY(0)}
+
+
+/* ══════════════════════════════════════════
+   LISTINGS GRID
+══════════════════════════════════════════ */
+.lst-wrapper{background:var(--bg);padding:0 0 88px}
+.lst-inner{max-width:var(--max);margin:0 auto;padding:0 40px}
+
+.cards-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:48px 0 28px;gap:16px;flex-wrap:wrap
+}
+.cards-count{font-family:var(--f-head);font-size:13px;color:var(--tx3);font-weight:500}
+.cards-count span{color:var(--or)}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(285px,1fr));
+  gap:20px
+}
+
+/* Card */
+.card{
+  background:var(--bg2);
+  border-radius:var(--r);border:1px solid var(--bdr);
+  overflow:hidden;position:relative;
+  transition:transform 240ms var(--ease),box-shadow 240ms var(--ease),border-color 240ms var(--ease);
+  cursor:pointer;
+  opacity:0;transform:translateY(24px)
+}
+.card.visible{animation:card-in .45s var(--ease) forwards}
+@keyframes card-in{to{opacity:1;transform:translateY(0)}}
+@media(hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(24,16,12,.1),0 2px 8px rgba(24,16,12,.06);border-color:var(--bdr2)}
+  .card:hover .c-img{transform:scale(1.04)}
+}
+
+.c-badge{
+  position:absolute;top:10px;left:10px;z-index:2;
+  font-family:var(--f-head);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.2px;
+  padding:4px 10px;border-radius:var(--r-pill);
+  background:rgba(24,16,12,.78);color:#fff;
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.08)
+}
+.c-img{
+  width:100%;aspect-ratio:4/3;
+  background:linear-gradient(135deg,var(--bg3) 0%,var(--bg4) 100%);
+  display:flex;align-items:center;justify-content:center;font-size:52px;
+  transition:transform 360ms var(--ease);position:relative;overflow:hidden
+}
+.c-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+
+.c-body{padding:16px 18px 18px}
+.c-cat{
+  font-family:var(--f-head);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;color:var(--or);margin-bottom:5px
+}
+.c-title{
+  font-family:var(--f-head);font-weight:700;font-size:15px;
+  color:var(--tx);margin-bottom:5px;line-height:1.3
+}
+.c-desc{font-size:13px;color:var(--tx2);line-height:1.65;margin-bottom:14px;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.c-meta{display:flex;align-items:center;gap:7px;margin-bottom:13px}
+.ava{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--or-pale);color:var(--or);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:10px;font-weight:700;flex-shrink:0
+}
+.ava img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.c-owner{font-size:12px;color:var(--tx2);font-weight:500}
+.c-loc{font-size:11px;color:var(--tx3);margin-left:auto;display:flex;align-items:center;gap:3px}
+.c-cond{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--f-head);font-size:10px;font-weight:600;
+  letter-spacing:.5px;text-transform:uppercase;
+  margin-bottom:13px;color:var(--tx3)
+}
+.cond-dot{width:6px;height:6px;border-radius:50%;background:var(--gr)}
+
+.btn-wa{
+  width:100%;background:#25D366;color:#fff;
+  border:none;border-radius:var(--r-sm);
+  padding:11px;
+  font-family:var(--f-head);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;
+  transition:background 160ms var(--ease),transform 160ms var(--ease),box-shadow 160ms var(--ease)
+}
+.btn-wa:active{transform:scale(0.97)}
+@media(hover:hover) and (pointer:fine){
+  .btn-wa:hover{background:#1ebe58;transform:translateY(-1px);box-shadow:0 5px 16px rgba(37,211,102,.28)}
+}
+.wa-svg{width:16px;height:16px;fill:#fff;flex-shrink:0}
+
+/* Skeleton loading */
+.skeleton{
+  animation:skel 1.6s ease infinite;
+  background:linear-gradient(90deg,var(--bg3) 20%,var(--bg4) 48%,var(--bg3) 80%);
+  background-size:300% 100%;border-radius:var(--r-xs)
+}
+@keyframes skel{0%{background-position:300% 0}100%{background-position:-100% 0}}
+.skel-card{background:var(--bg2);border-radius:var(--r);border:1px solid var(--bdr);overflow:hidden;opacity:1 !important;transform:none !important}
+.skel-img{width:100%;aspect-ratio:4/3}
+.skel-body{padding:16px 18px 18px}
+.skel-line{height:12px;margin-bottom:10px;border-radius:3px}
+.skel-line.sm{width:60%;height:10px}
+.skel-line.md{width:80%}
+.skel-line.lg{width:100%}
+.skel-btn{height:40px;border-radius:var(--r-sm);margin-top:14px}
+
+/* Empty state */
+.empty-state{
+  grid-column:1/-1;
+  text-align:center;padding:80px 40px;
+  display:flex;flex-direction:column;align-items:center;gap:14px
+}
+.empty-ico{font-size:48px;opacity:.5}
+.empty-t{font-family:var(--f-display);font-size:22px;color:var(--tx)}
+.empty-d{font-size:14px;color:var(--tx3);max-width:320px;line-height:1.6}
+
+/* My listings badge */
+.c-mine-badge{
+  position:absolute;top:10px;right:10px;z-index:3;
+  background:var(--or);color:#fff;
+  font-family:var(--f-head);font-size:9px;font-weight:700;
+  padding:3px 8px;border-radius:var(--r-pill);letter-spacing:.5px;text-transform:uppercase
+}
+.c-delete-btn{
+  position:absolute;top:36px;right:10px;z-index:3;
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(220,38,38,.9);color:#fff;
+  border:none;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s
+}
+.card:hover .c-delete-btn{opacity:1}
+
+
+/* ══════════════════════════════════════════
+   HOW IT WORKS
+══════════════════════════════════════════ */
+.how-bg{background:var(--bg2)}
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2px;max-width:960px;margin:0 auto;
+  background:var(--bdr);border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--bdr)
+}
+.step{
+  background:var(--bg2);padding:40px 28px;
+  transition:background 180ms var(--ease);position:relative;
+  opacity:0;transform:translateY(20px)
+}
+.step.visible{animation:card-in .5s var(--ease) forwards}
+@media(hover:hover) and (pointer:fine){.step:hover{background:var(--or-pale)}}
+.step-n{
+  font-family:var(--f-display);font-size:72px;
+  color:var(--bg3);line-height:1;margin-bottom:8px;
+  transition:color .3s
+}
+[data-theme=dark] .step-n{color:var(--bg4)}
+.step:hover .step-n{color:rgba(212,98,42,.2)}
+.step-ico{font-size:30px;margin-bottom:14px;display:block}
+.step-t{font-family:var(--f-head);font-weight:700;font-size:16px;color:var(--tx);margin-bottom:7px}
+.step-d{font-size:13px;color:var(--tx2);line-height:1.65;font-weight:300}
+.step-arrow{
+  position:absolute;top:50%;right:-1px;
+  width:22px;height:22px;
+  border-right:2px solid var(--bdr2);border-bottom:2px solid var(--bdr2);
+  transform:translateY(-50%) rotate(-45deg);
+  background:var(--bg2);z-index:1
+}
+.step:hover .step-arrow{background:var(--or-pale)}
+.step:last-child .step-arrow{display:none}
+
+
+/* ══════════════════════════════════════════
+   CATEGORIES
+══════════════════════════════════════════ */
+.cats-g{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;max-width:960px;margin:0 auto
+}
+.cat{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:var(--r);padding:26px 16px;
+  text-align:center;cursor:pointer;
+  transition:border-color 200ms var(--ease),background 200ms var(--ease),
+             transform 200ms var(--ease),box-shadow 200ms var(--ease);
+  opacity:0;transform:translateY(14px)
+}
+.cat.visible{animation:card-in .4s var(--ease) forwards}
+@media(hover:hover) and (pointer:fine){
+  .cat:hover{
+    border-color:var(--or);background:var(--or-pale);
+    transform:translateY(-3px);box-shadow:0 8px 28px rgba(200,90,36,.12)
+  }
+}
+.cat-e{font-size:30px;display:block;margin-bottom:10px}
+.cat-n{font-family:var(--f-head);font-size:12px;font-weight:700;color:var(--tx);letter-spacing:.2px}
+.cat-c{font-size:11px;color:var(--tx3);margin-top:4px}
+
+
+/* ══════════════════════════════════════════
+   STATS BAND
+══════════════════════════════════════════ */
+.stats-band{
+  background:var(--blk);padding:72px 40px;
+  position:relative;overflow:hidden
+}
+.stats-band::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    -45deg,rgba(212,98,42,.04) 0,rgba(212,98,42,.04) 1px,
+    transparent 1px,transparent 28px
+  )
+}
+.stats-in{
+  max-width:900px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:32px;text-align:center;position:relative;z-index:1
+}
+.s-num{
+  font-family:var(--f-display);font-style:italic;
+  font-size:clamp(48px,5.5vw,68px);
+  color:var(--or);line-height:1;margin-bottom:10px;font-weight:300
+}
+.s-lbl{font-size:13px;color:rgba(255,255,255,.4);font-weight:300;letter-spacing:.5px;text-transform:uppercase;font-size:11px}
+
+
+/* ══════════════════════════════════════════
+   CTA SECTION
+══════════════════════════════════════════ */
+.cta-s{background:var(--bg2);padding:96px 40px}
+.cta-inner{
+  max-width:680px;margin:0 auto;
+  background:var(--blk);border-radius:20px;
+  padding:72px 56px;position:relative;overflow:hidden;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.04)
+}
+[data-theme=dark] .cta-inner{border:1px solid var(--bdr)}
+.cta-inner::before{
+  content:'';position:absolute;
+  top:-80px;right:-80px;
+  width:280px;height:280px;
+  background:radial-gradient(circle,var(--or) 0%,transparent 70%);
+  opacity:.14
+}
+.cta-inner::after{
+  content:'';position:absolute;
+  bottom:-80px;left:-60px;
+  width:220px;height:220px;
+  background:radial-gradient(circle,var(--gr) 0%,transparent 70%);
+  opacity:.12
+}
+.cta-t{
+  font-family:var(--f-display);
+  font-size:clamp(28px,4vw,42px);
+  color:#fff;margin-bottom:14px;
+  line-height:1.05;position:relative;z-index:1
+}
+.cta-sub{
+  font-size:16px;color:rgba(255,255,255,.5);
+  margin-bottom:36px;line-height:1.7;font-weight:300;
+  position:relative;z-index:1
+}
+.cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer{
+  background:var(--blk);
+  border-top:1px solid rgba(255,255,255,.05);
+  padding:56px 40px 40px
+}
+.f-inner{max-width:var(--max);margin:0 auto}
+.f-top{display:flex;align-items:flex-start;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:40px}
+.f-logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--f-head);font-size:16px;font-weight:700;color:var(--or)
+}
+.f-badge{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--or);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--or)
+}
+.f-tagline{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-weight:300}
+.f-links-group{display:flex;gap:48px;flex-wrap:wrap}
+.f-col h4{
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;
+  color:rgba(255,255,255,.3);margin-bottom:14px
+}
+.f-col a{
+  display:block;font-size:13px;color:rgba(255,255,255,.4);
+  margin-bottom:8px;transition:color 150ms var(--ease)
+}
+@media(hover:hover) and (pointer:fine){.f-col a:hover{color:var(--or)}}
+.f-bottom{
+  border-top:1px solid rgba(255,255,255,.06);
+  padding-top:24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px
+}
+.f-copy{font-size:11px;color:rgba(255,255,255,.2)}
+.f-made{font-size:11px;color:rgba(255,255,255,.2)}
+.f-mx{color:var(--or)}
+
+
+/* ══════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════ */
+#s-ov{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(26,20,16,.45);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .3s
+}
+#s-ov.open{opacity:1;pointer-events:all}
+#s-pnl{
+  position:fixed;top:0;right:0;bottom:0;width:340px;max-width:100vw;
+  background:var(--bg2);z-index:2001;
+  border-left:1px solid var(--bdr);
+  transform:translateX(110%);
+  transition:transform 360ms var(--ease-drawer);
+  overflow-y:auto;padding:28px 24px
+}
+#s-pnl.open{transform:translateX(0)}
+.s-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.s-hdtxt{font-family:var(--f-head);font-weight:700;font-size:17px;color:var(--tx)}
+.s-close{
+  width:30px;height:30px;border:1.5px solid var(--bdr2);
+  border-radius:50%;background:transparent;color:var(--tx2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;transition:all .2s
+}
+.s-close:hover{border-color:var(--or);color:var(--or)}
+.s-grp{margin-bottom:28px}
+.s-glbl{
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;color:var(--tx3);
+  margin-bottom:12px;display:block
+}
+.s-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid var(--bdr)
+}
+.s-row:last-child{border-bottom:none}
+.s-rlbl{font-size:13px;color:var(--tx);display:flex;flex-direction:column;gap:2px}
+.s-rlbl small{font-size:11px;color:var(--tx3);font-weight:300}
+.tgl{position:relative;width:40px;height:22px;flex-shrink:0}
+.tgl input{display:none}
+.tgl-t{
+  width:100%;height:100%;background:var(--bdr2);
+  border-radius:11px;cursor:pointer;transition:background .2s;display:block
+}
+.tgl input:checked+.tgl-t{background:var(--or)}
+.tgl-th{
+  position:absolute;top:3px;left:3px;
+  width:16px;height:16px;background:#fff;
+  border-radius:50%;transition:transform .2s;
+  pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.2)
+}
+.tgl input:checked~.tgl-th{transform:translateX(18px)}
+.col-opts{display:flex;gap:8px;margin-top:8px}
+.col-o{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  border:3px solid transparent;transition:all .2s
+}
+.col-o.on{border-color:var(--tx);transform:scale(1.15)}
+
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--blk);color:#fff;
+  padding:10px 22px;border-radius:var(--r-pill);
+  font-family:var(--f-head);font-size:13px;font-weight:600;
+  z-index:9000;opacity:0;
+  transition:opacity 200ms var(--ease),transform 200ms var(--ease);
+  pointer-events:none;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 6px 24px rgba(24,16,12,.28)
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+/* ══════════════════════════════════════════
+   FAB
+══════════════════════════════════════════ */
+#fab{
+  position:fixed;bottom:28px;right:28px;z-index:900;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--or);color:#fff;border:none;
+  font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px var(--or-glow),0 2px 6px rgba(24,16,12,.12);
+  transition:transform 180ms var(--ease),background 180ms var(--ease),box-shadow 180ms var(--ease)
+}
+#fab:active{transform:scale(0.94)}
+@media(hover:hover) and (pointer:fine){
+  #fab:hover{transform:scale(1.06) rotate(12deg);background:var(--or-dark)}
+}
+
+
+/* ══════════════════════════════════════════
+   MODAL AUTH (wizard)
+══════════════════════════════════════════ */
+#modal-ov{
+  position:fixed;inset:0;z-index:4000;
+  background:rgba(26,20,16,.6);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .35s;
+  display:flex;align-items:center;justify-content:center;padding:20px
+}
+#modal-ov.open{opacity:1;pointer-events:all}
+#modal{
+  background:var(--bg2);border-radius:22px;
+  width:100%;max-width:520px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(24,16,12,.3);
+  transform:translateY(24px);
+  transition:transform 360ms var(--ease);
+  border:1px solid var(--bdr)
+}
+#modal-ov.open #modal{transform:translateY(0)}
+
+.m-top{background:var(--blk);padding:28px 32px 0;position:relative}
+.m-wordmark{
+  display:flex;align-items:center;gap:8px;margin-bottom:20px;
+  font-family:var(--f-display);font-size:18px;color:var(--or);font-weight:400;letter-spacing:-.3px
+}
+.m-logo-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--or);display:flex;align-items:center;justify-content:center;font-family:var(--f-head);font-size:11px;font-weight:700;color:var(--or)}
+.m-title{font-family:var(--f-display);font-size:26px;color:#fff;margin-bottom:4px;line-height:1.1}
+.m-sub{font-size:13px;color:rgba(255,255,255,.4);font-weight:300;margin-bottom:28px}
+.m-close{
+  position:absolute;top:20px;right:20px;
+  width:30px;height:30px;border:1.5px solid rgba(255,255,255,.18);
+  border-radius:50%;background:transparent;color:rgba(255,255,255,.5);
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s
+}
+.m-close:hover{border-color:var(--or);color:var(--or)}
+
+/* Step bar */
+.m-steps{display:flex;background:var(--blk);padding:0 32px 28px;gap:0}
+.m-step-ind{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.m-step-ind::after{
+  content:'';position:absolute;top:10px;left:50%;right:-50%;height:1px;
+  background:rgba(255,255,255,.1);z-index:0
+}
+.m-step-ind:last-child::after{display:none}
+.s-dot{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.18);background:transparent;
+  z-index:1;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:9px;font-weight:700;
+  color:rgba(255,255,255,.25);transition:all .3s
+}
+.m-step-ind.done .s-dot{background:var(--or);border-color:var(--or);color:#fff}
+.m-step-ind.active .s-dot{border-color:var(--or);color:var(--or)}
+.s-dot-lbl{font-family:var(--f-head);font-size:10px;color:rgba(255,255,255,.3);font-weight:500;transition:color .3s}
+.m-step-ind.active .s-dot-lbl{color:var(--or)}
+
+/* Modal body */
+.m-body{padding:28px 32px 32px}
+.m-lbl{
+  display:block;font-family:var(--f-head);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;color:var(--tx3);
+  margin-bottom:7px;margin-top:18px
+}
+.m-lbl:first-child{margin-top:0}
+.m-inp{
+  width:100%;background:var(--bg);border:1.5px solid var(--bdr2);
+  border-radius:var(--r-sm);padding:12px 16px;
+  font-family:var(--f-body);font-size:15px;color:var(--tx);
+  outline:none;
+  transition:border-color 160ms var(--ease),box-shadow 160ms var(--ease)
+}
+.m-inp:focus{border-color:var(--or);box-shadow:0 0 0 3px var(--or-glow)}
+.m-inp::placeholder{color:var(--tx4)}
+.m-ta{
+  width:100%;background:var(--bg);border:1.5px solid var(--bdr2);
+  border-radius:var(--r-sm);padding:12px 16px;
+  font-family:var(--f-body);font-size:14px;color:var(--tx);
+  outline:none;resize:vertical;min-height:90px;
+  transition:border-color .2s,box-shadow .2s
+}
+.m-ta:focus{border-color:var(--or);box-shadow:0 0 0 3px var(--or-glow)}
+.m-sel{
+  width:100%;background:var(--bg);border:1.5px solid var(--bdr2);
+  border-radius:var(--r-sm);padding:12px 16px;
+  font-family:var(--f-body);font-size:14px;color:var(--tx);
+  outline:none;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239C9088' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+  padding-right:36px
+}
+.m-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+
+.step-view{display:none}
+.step-view.active{display:block}
+
+/* OTP inputs */
+.otp-info{
+  background:var(--or-pale);border:1px solid rgba(212,98,42,.2);
+  border-radius:var(--r-sm);padding:14px 16px;margin-bottom:20px;
+  font-size:13px;color:var(--tx2);line-height:1.6
+}
+.otp-info strong{color:var(--or)}
+.otp-row{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.otp-inp{
+  width:52px;height:60px;text-align:center;
+  background:var(--bg);border:2px solid var(--bdr2);
+  border-radius:var(--r-sm);
+  font-family:var(--f-head);font-size:24px;font-weight:700;color:var(--tx);
+  outline:none;transition:border-color .2s,box-shadow .2s
+}
+.otp-inp{
+  transition:border-color 150ms var(--ease),box-shadow 150ms var(--ease)
+}
+.otp-inp:focus{border-color:var(--or);box-shadow:0 0 0 3px var(--or-glow)}
+.otp-resend{text-align:center;font-size:12px;color:var(--tx3)}
+.otp-resend button{
+  background:none;border:none;color:var(--or);
+  font-family:var(--f-head);font-size:12px;font-weight:600;
+  cursor:pointer;margin-left:4px
+}
+
+.m-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:24px;padding-top:20px;border-top:1px solid var(--bdr)
+}
+.m-foot-btns{display:flex;gap:8px}
+.m-hint{font-size:11px;color:var(--tx3)}
+
+/* Photo area */
+.photo-area{
+  border:1.5px dashed var(--bdr2);border-radius:var(--r-sm);
+  padding:28px 20px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;margin-bottom:4px
+}
+.photo-area:hover{border-color:var(--or);background:var(--or-subtle)}
+.photo-area-ico{font-size:28px;margin-bottom:8px}
+.photo-area-t{font-family:var(--f-head);font-size:13px;color:var(--tx);font-weight:600}
+.photo-area-sub{font-size:11px;color:var(--tx3);margin-top:4px}
+.photo-previews{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.photo-prev{width:72px;height:72px;border-radius:var(--r-sm);object-fit:cover;border:1.5px solid var(--bdr2)}
+
+/* Success view */
+.success-v{text-align:center;padding:20px 0}
+.suc-ico{font-size:52px;margin-bottom:16px;display:block}
+.suc-t{font-family:var(--f-display);font-size:28px;color:var(--tx);margin-bottom:8px}
+.suc-d{font-size:14px;color:var(--tx2);line-height:1.65;margin-bottom:24px;font-weight:300}
+
+/* Condition pills */
+.cond-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.cond-pill{
+  font-family:var(--f-head);font-size:12px;font-weight:600;
+  padding:7px 14px;border-radius:var(--r-pill);
+  border:1.5px solid var(--bdr2);background:transparent;
+  color:var(--tx3);cursor:pointer;transition:all .2s
+}
+.cond-pill.on{border-color:var(--or);color:var(--or);background:var(--or-pale)}
+
+/* reCAPTCHA container */
+#recaptcha-container{margin-top:14px}
+#recaptcha-container>div{border-radius:var(--r-sm) !important}
+
+/* Auth loading state */
+.auth-loading{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px;color:var(--tx2);font-size:13px
+}
+.spin{
+  width:18px;height:18px;border:2px solid var(--bdr2);
+  border-top-color:var(--or);border-radius:50%;
+  animation:spin .8s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════
+   MODAL PUBLISH (side panel)
+══════════════════════════════════════════ */
+#pub-ov{
+  position:fixed;inset:0;z-index:4000;
+  background:rgba(26,20,16,.55);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .35s;
+  display:flex;align-items:center;justify-content:flex-end
+}
+#pub-ov.open{opacity:1;pointer-events:all}
+#pub-panel{
+  background:var(--bg2);width:100%;max-width:460px;height:100%;
+  overflow-y:auto;
+  transform:translateX(100%);
+  transition:transform 380ms var(--ease-drawer);
+  padding:32px 28px;
+  border-left:1px solid var(--bdr)
+}
+#pub-ov.open #pub-panel{transform:translateX(0)}
+.pub-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:12px}
+.pub-title-text{font-family:var(--f-display);font-size:22px;color:var(--tx);line-height:1.1}
+.pub-sub-text{font-size:12px;color:var(--tx3);margin-top:5px;font-weight:300}
+
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+/* prefers-reduced-motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important
+  }
+  [data-rv]{opacity:1;transform:none}
+  .card{opacity:1;transform:none}
+}
+
+@media(max-width:900px){
+  nav{padding:0 20px}
+  .nav-center{display:none}
+  .hero{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto;
+    text-align:center;gap:0;
+    padding:calc(var(--nav) + 48px) 24px 60px
+  }
+  .hero-sub{margin:0 auto 36px}
+  .hero-ctas{justify-content:center}
+  .hero-trust{justify-content:center}
+  .hero-right{display:none}
+  .sec,.sec-full{padding:60px 24px}
+  .lst-inner{padding:0 24px}
+  .search-s,.stats-band,.cta-s,footer{padding-left:24px;padding-right:24px}
+  .steps{gap:0;border-radius:var(--r-sm)}
+  .step-arrow{display:none}
+  footer{padding-bottom:32px}
+  .f-top{flex-direction:column;gap:24px}
+  .f-links-group{gap:28px}
+}
+@media(max-width:600px){
+  .cards{grid-template-columns:1fr}
+  .cats-g{grid-template-columns:repeat(3,1fr)}
+  .stats-in{grid-template-columns:repeat(2,1fr)}
+  .otp-row{gap:8px}
+  .otp-inp{width:46px;height:54px;font-size:20px}
+  .m-body{padding:20px 20px 24px}
+  .m-top{padding:20px 20px 0}
+  .m-steps{padding:0 20px 20px}
+  .cta-inner{padding:48px 28px}
+  nav{height:60px}
+  --nav:60px
+}
+
+/* ══════════════════════════════════════════
+   GUÍA MODAL — Firebase Setup Guide
+══════════════════════════════════════════ */
+#guide-ov{
+  position:fixed;inset:0;z-index:5000;
+  background:rgba(16,13,9,.75);backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;transition:opacity .35s;
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto
+}
+#guide-ov.open{opacity:1;pointer-events:all}
+#guide-modal{
+  background:var(--bg2);border-radius:20px;
+  width:100%;max-width:700px;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(16,13,9,.4);
+  border:1px solid var(--bdr);
+  transform:translateY(24px);transition:transform 380ms var(--ease)
+}
+#guide-ov.open #guide-modal{transform:translateY(0)}
+.gd-top{
+  background:var(--blk);padding:28px 32px 24px;
+  position:sticky;top:0;z-index:10;
+  border-radius:20px 20px 0 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  border-bottom:1px solid rgba(255,255,255,.07)
+}
+.gd-title{font-family:var(--f-display);font-size:22px;color:#fff;line-height:1.1}
+.gd-sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:4px;font-weight:300}
+.gd-body{padding:32px}
+.gd-step{
+  display:flex;gap:16px;margin-bottom:28px;
+  padding-bottom:28px;border-bottom:1px solid var(--bdr)
+}
+.gd-step:last-child{border-bottom:none;margin-bottom:0}
+.gd-num{
+  flex-shrink:0;width:32px;height:32px;border-radius:50%;
+  background:var(--or-pale);border:2px solid rgba(212,98,42,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-head);font-size:12px;font-weight:800;color:var(--or);
+  margin-top:2px
+}
+.gd-cnt{}
+.gd-h{font-family:var(--f-head);font-weight:700;font-size:15px;color:var(--tx);margin-bottom:7px;line-height:1.2}
+.gd-p{font-size:13px;color:var(--tx2);line-height:1.7;font-weight:300}
+.gd-p strong{color:var(--tx);font-weight:600}
+.gd-code{
+  background:var(--bg3);border:1px solid var(--bdr2);
+  border-radius:var(--r-sm);padding:14px 16px;margin:10px 0;
+  font-family:'Courier New',monospace;font-size:12px;color:var(--tx);
+  white-space:pre-wrap;line-height:1.6;overflow-x:auto
+}
+.gd-warn{
+  background:rgba(212,98,42,.08);border:1px solid rgba(212,98,42,.22);
+  border-radius:var(--r-sm);padding:12px 14px;margin:10px 0;
+  font-size:12px;color:var(--tx2);line-height:1.6
+}
+.gd-warn strong{color:var(--or)}
+.gd-ok{
+  background:rgba(45,90,61,.08);border:1px solid rgba(45,90,61,.22);
+  border-radius:var(--r-sm);padding:12px 14px;margin:10px 0;
+  font-size:12px;color:var(--tx2);line-height:1.6
+}
+.gd-ok strong{color:var(--gr)}
+.gd-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--or-pale);color:var(--or);
+  font-family:var(--f-head);font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:var(--r-pill);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px
+}
+.gd-footer{
+  background:var(--bg3);border-top:1px solid var(--bdr);
+  padding:20px 32px;border-radius:0 0 20px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap
+}
+.gd-footer-note{font-size:11px;color:var(--tx3);line-height:1.5}
+@media(max-width:600px){
+  .gd-body{padding:20px}
+  .gd-top{padding:20px}
+  .gd-footer{padding:16px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     LOADER
+════════════════════════════════ -->
+<div id="ldr" aria-hidden="true">
+  <div class="ldr-wordmark">
+    <div class="ldr-r">R</div>
+    RENTALOS
+  </div>
+  <div class="ldr-track"><div class="ldr-fill" id="ldr-fill"></div></div>
+  <div class="ldr-pct" id="ldr-pct">0%</div>
+</div>
+
+<!-- Reading progress -->
+<div id="rp" aria-hidden="true"></div>
+
+<!-- Toast notifications -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<!-- FAB -->
+<button id="fab" onclick="handlePublish()" title="Publicar objeto" aria-label="Publicar objeto">+</button>
+
+
+<!-- ════════════════════════════════
+     SETTINGS PANEL
+════════════════════════════════ -->
+<div id="s-ov" onclick="closeSett()"></div>
+<div id="s-pnl" role="dialog" aria-label="Configuración">
+  <div class="s-hd">
+    <span class="s-hdtxt">Configuración</span>
+    <button class="s-close" onclick="closeSett()" aria-label="Cerrar">✕</button>
+  </div>
+
+  <div class="s-grp">
+    <span class="s-glbl">Apariencia</span>
+    <div class="s-row">
+      <div class="s-rlbl">Modo oscuro<small>Ahorra batería en OLED</small></div>
+      <label class="tgl">
+        <input type="checkbox" id="dark-tgl" onchange="setDark(this)">
+        <span class="tgl-t"></span><span class="tgl-th"></span>
+      </label>
+    </div>
+    <div class="s-row">
+      <div class="s-rlbl">Vista compacta<small>Más tarjetas por fila</small></div>
+      <label class="tgl">
+        <input type="checkbox" id="compact-tgl" onchange="setCompact(this)">
+        <span class="tgl-t"></span><span class="tgl-th"></span>
+      </label>
+    </div>
+    <div class="s-row">
+      <div class="s-rlbl">Reducir movimiento<small>Para dispositivos lentos</small></div>
+      <label class="tgl">
+        <input type="checkbox" onchange="setAnim(this)">
+        <span class="tgl-t"></span><span class="tgl-th"></span>
+      </label>
+    </div>
+    <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:12px">
+      <div class="s-rlbl">Color de acento</div>
+      <div class="col-opts">
+        <div class="col-o on" style="background:#D4622A" onclick="setAccent('#D4622A','#A8461A','#FDF0E8',this)" title="Terracota"></div>
+        <div class="col-o" style="background:#2D5A3D" onclick="setAccent('#2D5A3D','#1E3D29','#EDF5F0',this)" title="Verde selva"></div>
+        <div class="col-o" style="background:#8B4513" onclick="setAccent('#8B4513','#6B3410','#FEF3E8',this)" title="Café cacao"></div>
+        <div class="col-o" style="background:#4A4E69" onclick="setAccent('#4A4E69','#2D3048','#EEEEF5',this)" title="Índigo"></div>
+        <div class="col-o" style="background:#C0392B" onclick="setAccent('#C0392B','#96291E','#FDECEA',this)" title="Adobe"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-grp" id="s-account-grp" style="display:none">
+    <span class="s-glbl">Mi cuenta</span>
+    <div class="s-row">
+      <div class="s-rlbl">Nombre<small id="s-name-val">—</small></div>
+    </div>
+    <div class="s-row">
+      <div class="s-rlbl">Teléfono<small id="s-phone-val">—</small></div>
+    </div>
+    <div class="s-row">
+      <div class="s-rlbl">Ciudad<small id="s-city-val">—</small></div>
+    </div>
+  </div>
+
+  <button class="btn btn-or" id="s-auth-btn" style="width:100%;justify-content:center;margin-top:8px" onclick="openModal();closeSett()">Crear cuenta gratis</button>
+  <button class="btn btn-ghost" id="s-logout-btn" style="width:100%;justify-content:center;margin-top:8px;display:none" onclick="handleLogout()">Cerrar sesión</button>
+</div>
+
+
+<!-- ════════════════════════════════
+     AUTH MODAL (wizard)
+════════════════════════════════ -->
+<div id="modal-ov" onclick="modalOvClick(event)" role="dialog" aria-modal="true" aria-label="Crear cuenta">
+  <div id="modal">
+    <div class="m-top">
+      <div class="m-wordmark"><div class="m-logo-dot">R</div>RENTALOS</div>
+      <div class="m-title" id="m-title">Crear cuenta</div>
+      <div class="m-sub" id="m-sub">Gratis · Sin tarjeta · 3 minutos</div>
+      <button class="m-close" onclick="closeModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="m-steps" id="m-steps">
+      <div class="m-step-ind active" id="si-1"><div class="s-dot">1</div><div class="s-dot-lbl">Datos</div></div>
+      <div class="m-step-ind" id="si-2"><div class="s-dot">2</div><div class="s-dot-lbl">Verificar</div></div>
+      <div class="m-step-ind" id="si-3"><div class="s-dot">3</div><div class="s-dot-lbl">Perfil</div></div>
+    </div>
+    <div class="m-body">
+
+      <!-- STEP 1: datos -->
+      <div class="step-view active" id="sv-1">
+        <span class="m-lbl">Nombre completo</span>
+        <input class="m-inp" type="text" placeholder="Ej: Carlos Martínez" id="f-name" autocomplete="name">
+        <span class="m-lbl">Número de WhatsApp</span>
+        <input class="m-inp" type="tel" placeholder="+52 449 123 4567" id="f-phone" autocomplete="tel">
+        <div class="m-row2">
+          <div>
+            <span class="m-lbl">Ciudad</span>
+            <input class="m-inp" type="text" placeholder="Aguascalientes" id="f-city">
+          </div>
+          <div>
+            <span class="m-lbl">Colonia</span>
+            <input class="m-inp" type="text" placeholder="Ej: Jardines" id="f-col">
+          </div>
+        </div>
+        <!-- reCAPTCHA se monta aquí -->
+        <div id="recaptcha-container"></div>
+        <div class="m-foot">
+          <span class="m-hint">Enviaremos un SMS de verificación</span>
+          <div class="m-foot-btns">
+            <button class="btn btn-or" onclick="sendOTP()" id="btn-send-otp">Enviar código →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: OTP -->
+      <div class="step-view" id="sv-2">
+        <div class="otp-info">
+          Enviamos un código de 6 dígitos por <strong>SMS</strong> al número <strong id="otp-phone-display"></strong>. Ingrésalo para verificar tu cuenta.
+        </div>
+        <div class="otp-row">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp1" oninput="otpNext(this,'otp2')">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp2" oninput="otpNext(this,'otp3')">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp3" oninput="otpNext(this,'otp4')">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp4" oninput="otpNext(this,'otp5')">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp5" oninput="otpNext(this,'otp6')">
+          <input class="otp-inp" type="text" inputmode="numeric" maxlength="1" id="otp6" oninput="otpNext(this,null)">
+        </div>
+        <div class="otp-resend">¿No llegó? <button onclick="resendOTP()">Reenviar código</button></div>
+        <div id="otp-loading" style="display:none" class="auth-loading"><div class="spin"></div>Verificando...</div>
+        <div class="m-foot">
+          <span class="m-hint">Paso 2 de 3</span>
+          <div class="m-foot-btns">
+            <button class="btn btn-ghost" onclick="goStep(1)">← Atrás</button>
+            <button class="btn btn-or" onclick="verifyOTP()" id="btn-verify">Verificar →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: perfil -->
+      <div class="step-view" id="sv-3">
+        <span class="m-lbl">Foto de perfil <span style="color:var(--tx4);font-size:10px;font-weight:400">(opcional)</span></span>
+        <div class="photo-area" onclick="triggerPhoto('pf-inp')">
+          <div class="photo-area-ico">🤳</div>
+          <div class="photo-area-t"><b>Haz clic</b> o arrastra tu foto</div>
+          <div class="photo-area-sub">JPG, PNG — máx 5MB</div>
+        </div>
+        <input type="file" id="pf-inp" accept="image/*" style="display:none" onchange="previewPhoto(this,'pf-prev')">
+        <div id="pf-prev"></div>
+        <span class="m-lbl">Sobre mí <span style="color:var(--tx4);font-size:10px;font-weight:400">(opcional)</span></span>
+        <textarea class="m-ta" id="f-bio" placeholder="Ej: Soy mecánico, tengo varias herramientas disponibles. Vivo en Jardines..."></textarea>
+        <span class="m-lbl">Horario disponible</span>
+        <select class="m-sel" id="f-schedule">
+          <option value="anytime">Cualquier hora</option>
+          <option value="morning">Mañanas (8am – 1pm)</option>
+          <option value="afternoon">Tardes (1pm – 7pm)</option>
+          <option value="evening">Noches (7pm – 10pm)</option>
+          <option value="weekends">Solo fines de semana</option>
+        </select>
+        <div id="profile-loading" style="display:none" class="auth-loading"><div class="spin"></div>Guardando perfil...</div>
+        <div class="m-foot">
+          <span class="m-hint">Paso 3 de 3</span>
+          <div class="m-foot-btns">
+            <button class="btn btn-or" onclick="finishProfile()" id="btn-finish">Crear perfil ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="step-view" id="sv-ok">
+        <div class="success-v">
+          <span class="suc-ico">🎉</span>
+          <div class="suc-t">¡Bienvenido!</div>
+          <div class="suc-d">Tu perfil está activo. Ya puedes publicar objetos y servicios. Cada publicación tendrá tu botón de WhatsApp para que te contacten directo.</div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-or" onclick="closeModal();handlePublish()">Publicar mi primer objeto →</button>
+            <button class="btn btn-ghost" onclick="closeModal()">Ver publicaciones</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     PUBLISH MODAL (slide panel)
+════════════════════════════════ -->
+<div id="pub-ov" onclick="pubOvClick(event)" role="dialog" aria-modal="true" aria-label="Nueva publicación">
+  <div id="pub-panel">
+    <div class="pub-hd">
+      <div>
+        <div class="pub-title-text">Nueva publicación</div>
+        <div class="pub-sub-text">Tu WhatsApp será el contacto directo</div>
+      </div>
+      <button class="s-close" onclick="closePub()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <span class="m-lbl">Fotos del objeto <span style="color:var(--tx4);font-size:10px">(hasta 4)</span></span>
+    <div class="photo-area" onclick="triggerPhoto('obj-inp')">
+      <div class="photo-area-ico">📸</div>
+      <div class="photo-area-t"><b>Agregar fotos</b></div>
+      <div class="photo-area-sub">Más fotos = más préstamos</div>
+    </div>
+    <input type="file" id="obj-inp" accept="image/*" multiple style="display:none" onchange="previewMulti(this,'obj-prev')">
+    <div id="obj-prev" class="photo-previews"></div>
+
+    <span class="m-lbl">Título</span>
+    <input class="m-inp" type="text" placeholder="Ej: Taladro percutor Bosch 800W" id="pub-title" maxlength="80">
+
+    <span class="m-lbl">Categoría</span>
+    <select class="m-sel" id="pub-cat">
+      <option value="">Selecciona categoría</option>
+      <option value="herramientas">🔧 Herramientas</option>
+      <option value="servicios">🛠 Servicios</option>
+      <option value="hogar">🏠 Hogar</option>
+      <option value="jardin">🌿 Jardín</option>
+      <option value="electrodomesticos">⚡ Electrodomésticos</option>
+      <option value="deporte">⚽ Deporte</option>
+      <option value="tecnologia">💻 Tecnología</option>
+      <option value="vehiculos">🚗 Vehículos</option>
+      <option value="otro">📦 Otro</option>
+    </select>
+
+    <span class="m-lbl">Descripción</span>
+    <textarea class="m-ta" id="pub-desc" placeholder="Cuéntales qué es, condición, horario de recogida..." maxlength="400"></textarea>
+
+    <span class="m-lbl">Condición</span>
+    <div class="cond-row" id="cond-row">
+      <div class="cond-pill on" onclick="setCond(this)" data-val="nuevo">Como nuevo</div>
+      <div class="cond-pill" onclick="setCond(this)" data-val="bueno">Buen estado</div>
+      <div class="cond-pill" onclick="setCond(this)" data-val="regular">Uso regular</div>
+      <div class="cond-pill" onclick="setCond(this)" data-val="servicio">Servicio</div>
+    </div>
+
+    <span class="m-lbl">Disponibilidad</span>
+    <select class="m-sel" id="pub-avail">
+      <option value="now">Disponible ahora</option>
+      <option value="weekends">Solo fines de semana</option>
+      <option value="appointment">Con cita previa</option>
+      <option value="soon">Próximamente</option>
+    </select>
+
+    <span class="m-lbl">Zona de entrega / recogida</span>
+    <input class="m-inp" type="text" id="pub-zone" placeholder="Ej: Jardines, AGS — o paso a domicilio">
+
+    <div id="pub-loading" style="display:none" class="auth-loading"><div class="spin"></div>Publicando...</div>
+
+    <div style="margin-top:24px;display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closePub()">Cancelar</button>
+      <button class="btn btn-or" style="flex:2;justify-content:center" onclick="submitPub()" id="btn-pub">Publicar ✓</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     NAV
+════════════════════════════════ -->
+<nav id="nav" role="navigation">
+  <a href="#" class="nav-logo" aria-label="Rentalos inicio">
+    <div class="logo-mark">R</div>
+    <span class="logo-text"><span>RENTALOS</span></span>
+  </a>
+  <div class="nav-center">
+    <a href="#listings" class="nav-link">Explorar</a>
+    <a href="#como" class="nav-link">¿Cómo funciona?</a>
+    <a href="#cats" class="nav-link">Categorías</a>
+  </div>
+  <div class="nav-r">
+    <!-- Unauthenticated -->
+    <div id="nav-unauth" style="display:flex;align-items:center;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="handlePublish()">Publicar</button>
+      <button class="btn btn-solid btn-sm" onclick="openModal()">Entrar →</button>
+    </div>
+    <!-- Authenticated -->
+    <div id="nav-auth" style="display:none;align-items:center;gap:8px">
+      <button class="btn btn-or btn-sm" onclick="handlePublish()">+ Publicar</button>
+      <div style="position:relative">
+        <div class="nav-avatar" id="nav-ava" onclick="toggleUserMenu()" aria-label="Menú de usuario" role="button" tabindex="0">
+          <span id="nav-ava-initial">U</span>
+        </div>
+        <div class="user-menu" id="user-menu">
+          <div class="um-header">
+            <div class="um-name" id="um-name">Usuario</div>
+            <div class="um-phone" id="um-phone">—</div>
+          </div>
+          <button class="um-item" onclick="scrollToMyListings();closeUserMenu()"><span class="um-ico">📋</span>Mis publicaciones</button>
+          <button class="um-item" onclick="handlePublish();closeUserMenu()"><span class="um-ico">➕</span>Nueva publicación</button>
+          <div class="um-divider"></div>
+          <button class="um-item" onclick="openSett();closeUserMenu()"><span class="um-ico">⚙️</span>Configuración</button>
+          <div class="um-divider"></div>
+          <button class="um-item danger" onclick="handleLogout()"><span class="um-ico">🚪</span>Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn-icon" onclick="openSett()" title="Ajustes" aria-label="Ajustes">⚙</button>
+  </div>
+</nav>
+
+
+<!-- ════════════════════════════════
+     HERO
+════════════════════════════════ -->
+<div class="hero-backdrop"></div>
+<div style="background:var(--bg)">
+  <section class="hero" id="home">
+    <div class="hero-left">
+      <div class="hero-eyebrow"><div class="eyebrow-dot"></div>Plataforma vecinal · Aguascalientes, México</div>
+      <h1 class="hero-headline">
+        Presta.<br>
+        <em>Pide.</em><br>
+        <span class="hl-gr">Conecta.</span>
+      </h1>
+      <p class="hero-sub">Desde una pala hasta servicio de plomería — encuentra lo que necesitas o publica lo que tienes. Solo un WhatsApp de distancia.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-solid btn-lg" onclick="openModal()">Crear perfil gratis</button>
+        <a href="#listings" class="btn btn-ghost btn-lg">Ver publicaciones</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-avatars">
+          <div class="trust-ava">CM</div>
+          <div class="trust-ava">RH</div>
+          <div class="trust-ava">SP</div>
+          <div class="trust-ava" style="background:#E8844D;color:#fff">+</div>
+        </div>
+        <div class="trust-txt"><strong>380+ vecinos</strong> ya comparten<br>objetos en la comunidad</div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-card-stack">
+        <div class="hcard hcard-1">
+          <div class="hcard-img">🔧</div>
+          <div class="hcard-body">
+            <span class="hcard-tag">Herramientas</span>
+            <div class="hcard-title">Taladro percutor Bosch 800W</div>
+            <div class="hcard-loc">📍 Aguascalientes</div>
+            <div class="hcard-meta">
+              <div class="hcard-ava">CM</div>
+              <span class="hcard-owner">Carlos M.</span>
+              <button class="hcard-wa">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="hcard hcard-2">
+          <div class="hcard-img" style="font-size:36px">🚲</div>
+          <div class="hcard-body">
+            <span class="hcard-tag">Deporte</span>
+            <div class="hcard-title">Bicicleta de montaña 26"</div>
+            <div class="hcard-loc">📍 Aguascalientes</div>
+          </div>
+        </div>
+        <div class="hero-badge">
+          <span class="hero-badge-num" data-cnt="1240" id="hero-cnt">1,240</span>
+          <span class="hero-badge-lbl">Objetos disponibles</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ════════════════════════════════
+     SEARCH
+════════════════════════════════ -->
+<section class="search-s" id="search">
+  <div class="s-wrap">
+    <span class="s-label">¿Qué necesitas hoy?</span>
+    <div class="s-box">
+      <span class="s-ico">🔍</span>
+      <input type="search" id="s-inp" placeholder="Busca: taladro, plomero, bicicleta, escalera..." oninput="filterCards(this.value)" autocomplete="off" aria-label="Buscar objetos">
+      <button class="btn btn-solid btn-sm" onclick="filterCards(document.getElementById('s-inp').value)">Buscar</button>
+    </div>
+    <div class="chips" id="filter-chips">
+      <button class="chip on" onclick="setFilter('todos',this)">Todos</button>
+      <button class="chip" onclick="setFilter('herramientas',this)">🔧 Herramientas</button>
+      <button class="chip" onclick="setFilter('servicios',this)">🛠 Servicios</button>
+      <button class="chip" onclick="setFilter('hogar',this)">🏠 Hogar</button>
+      <button class="chip" onclick="setFilter('jardin',this)">🌿 Jardín</button>
+      <button class="chip" onclick="setFilter('electrodomesticos',this)">⚡ Electro</button>
+      <button class="chip" onclick="setFilter('deporte',this)">⚽ Deporte</button>
+      <button class="chip" onclick="setFilter('tecnologia',this)">💻 Tech</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     LISTINGS
+════════════════════════════════ -->
+<div class="lst-wrapper" id="listings">
+  <div class="lst-inner">
+    <div class="cards-header">
+      <div>
+        <span class="eyebrow">Publicaciones</span>
+        <h2 style="font-family:var(--f-display);font-size:28px;color:var(--tx);letter-spacing:-.3px">Disponible ahora</h2>
+      </div>
+      <div class="cards-count">Mostrando <span id="cards-count-n">—</span> objetos</div>
+    </div>
+    <div class="cards" id="cards">
+      <!-- Skeleton loading -->
+      <div class="skel-card">
+        <div class="skel-img skeleton"></div>
+        <div class="skel-body">
+          <div class="skel-line sm skeleton"></div>
+          <div class="skel-line md skeleton"></div>
+          <div class="skel-line lg skeleton"></div>
+          <div class="skel-btn skeleton"></div>
+        </div>
+      </div>
+      <div class="skel-card">
+        <div class="skel-img skeleton"></div>
+        <div class="skel-body">
+          <div class="skel-line sm skeleton"></div>
+          <div class="skel-line md skeleton"></div>
+          <div class="skel-line lg skeleton"></div>
+          <div class="skel-btn skeleton"></div>
+        </div>
+      </div>
+      <div class="skel-card">
+        <div class="skel-img skeleton"></div>
+        <div class="skel-body">
+          <div class="skel-line sm skeleton"></div>
+          <div class="skel-line md skeleton"></div>
+          <div class="skel-line lg skeleton"></div>
+          <div class="skel-btn skeleton"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════ -->
+<section id="como" style="background:var(--bg2);padding:88px 40px">
+  <div style="max-width:var(--max);margin:0 auto">
+    <div class="sec-hd centered" data-rv>
+      <span class="eyebrow">¿Cómo funciona?</span>
+      <h2 class="sec-title">Tres pasos, sin rollos</h2>
+      <p class="sec-sub" style="margin:12px auto 0">Diseñado para vecinos, no para corporativos.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <span class="step-ico">📱</span>
+        <div class="step-t">Crea tu perfil</div>
+        <div class="step-d">Solo tu nombre y WhatsApp. En 3 minutos tienes cuenta activa, verificada por SMS.</div>
+        <div class="step-arrow"></div>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <span class="step-ico">📸</span>
+        <div class="step-t">Publica lo que tienes</div>
+        <div class="step-d">Foto, título y categoría. Herramienta, electrodoméstico, servicio — lo que sea.</div>
+        <div class="step-arrow"></div>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <span class="step-ico">🤝</span>
+        <div class="step-t">Conecta directo</div>
+        <div class="step-d">El vecino da clic y te escribe por WhatsApp. Tú decides si prestas. Sin intermediarios.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     CATEGORIES
+════════════════════════════════ -->
+<section style="background:var(--bg);padding:88px 40px" id="cats">
+  <div style="max-width:var(--max);margin:0 auto">
+    <div class="sec-hd centered" data-rv>
+      <span class="eyebrow">Categorías</span>
+      <h2 class="sec-title">Encuentra por tipo</h2>
+    </div>
+    <div class="cats-g">
+      <div class="cat" onclick="jumpToFilter('herramientas')"><span class="cat-e">🔧</span><div class="cat-n">Herramientas</div><div class="cat-c" id="cnt-herramientas">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('servicios')"><span class="cat-e">🛠</span><div class="cat-n">Servicios</div><div class="cat-c" id="cnt-servicios">— publicaciones</div></div>
+      <div class="cat" onclick="jumpToFilter('hogar')"><span class="cat-e">🏠</span><div class="cat-n">Hogar</div><div class="cat-c" id="cnt-hogar">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('jardin')"><span class="cat-e">🌿</span><div class="cat-n">Jardín</div><div class="cat-c" id="cnt-jardin">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('electrodomesticos')"><span class="cat-e">⚡</span><div class="cat-n">Electro</div><div class="cat-c" id="cnt-electrodomesticos">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('deporte')"><span class="cat-e">⚽</span><div class="cat-n">Deporte</div><div class="cat-c" id="cnt-deporte">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('tecnologia')"><span class="cat-e">💻</span><div class="cat-n">Tecnología</div><div class="cat-c" id="cnt-tecnologia">— objetos</div></div>
+      <div class="cat" onclick="jumpToFilter('vehiculos')"><span class="cat-e">🚗</span><div class="cat-n">Vehículos</div><div class="cat-c" id="cnt-vehiculos">— objetos</div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     STATS
+════════════════════════════════ -->
+<div class="stats-band" data-rv>
+  <div class="stats-in">
+    <div><div class="s-num" data-cnt="1240" id="stat-objects">1,240</div><div class="s-lbl">Objetos disponibles</div></div>
+    <div><div class="s-num" data-cnt="380" id="stat-users">380</div><div class="s-lbl">Usuarios activos</div></div>
+    <div><div class="s-num" data-cnt="2100" id="stat-loans">2,100</div><div class="s-lbl">Préstamos realizados</div></div>
+    <div><div class="s-num" data-cnt="15" id="stat-colonias">15</div><div class="s-lbl">Colonias conectadas</div></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     CTA
+════════════════════════════════ -->
+<section class="cta-s">
+  <div class="cta-inner" data-rv>
+    <div class="cta-t">¿Tienes algo que<br>prestar? Publícalo gratis</div>
+    <p class="cta-sub">En 5 minutos tu perfil está activo y visible para toda la comunidad. Sin costos ocultos, sin comisiones, sin burocracia.</p>
+    <div class="cta-btns">
+      <button class="btn btn-or btn-lg" onclick="openModal()">Crear mi perfil →</button>
+      <button class="btn btn-lg" style="color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.12)" onclick="showToast('📲 App próximamente en iOS y Android')">Descargar app</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     FOOTER
+════════════════════════════════ -->
+<footer>
+  <div class="f-inner">
+    <div class="f-top">
+      <div>
+        <div class="f-logo"><div class="f-badge">R</div>RENTALOS</div>
+        <div class="f-tagline">Presta. Pide. Conecta. · México 🇲🇽</div>
+      </div>
+      <div class="f-links-group">
+        <div class="f-col">
+          <h4>Plataforma</h4>
+          <a href="#home">Inicio</a>
+          <a href="#listings">Explorar</a>
+          <a href="#como">¿Cómo funciona?</a>
+          <a href="#cats">Categorías</a>
+        </div>
+        <div class="f-col">
+          <h4>Cuenta</h4>
+          <a href="#" onclick="openModal();return false">Crear perfil</a>
+          <a href="#" onclick="handlePublish();return false">Publicar objeto</a>
+          <a href="#" onclick="openSett();return false">Configuración</a>
+        </div>
+        <div class="f-col">
+          <h4>Legal</h4>
+          <a href="#">Privacidad</a>
+          <a href="#">Términos</a>
+          <a href="#" onclick="openGuide();return false">⚙ Guía Firebase</a>
+        </div>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <div class="f-copy">© 2025 Rentalos.com — Todos los derechos reservados</div>
+      <div class="f-made">Hecho con 🧡 en <span class="f-mx">México</span></div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════════════
+     FIREBASE SETUP GUIDE MODAL
+════════════════════════════════ -->
+<div id="guide-ov" onclick="guideOvClick(event)" role="dialog" aria-modal="true" aria-label="Guía de configuración Firebase">
+  <div id="guide-modal">
+    <div class="gd-top">
+      <div>
+        <div class="gd-title">Guía de configuración Firebase</div>
+        <div class="gd-sub">Paso a paso para no-expertos en backend · ~20 minutos</div>
+      </div>
+      <button class="s-close" style="border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.5)" onclick="closeGuide()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="gd-body">
+
+      <!-- PASO 1 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">1</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Firebase Console</div>
+          <div class="gd-h">Crear proyecto Firebase</div>
+          <div class="gd-p">
+            Ve a <strong>console.firebase.google.com</strong> e inicia sesión con tu cuenta Google.<br>
+            Clic en <strong>"Agregar proyecto"</strong> → ponle nombre (ej. <em>rentalos-prod</em>) → desactiva Google Analytics si no lo necesitas → <strong>"Crear proyecto"</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">2</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Web App</div>
+          <div class="gd-h">Registrar tu app web y obtener firebaseConfig</div>
+          <div class="gd-p">
+            En la consola del proyecto → ícono <strong>"&lt;/&gt;"</strong> (Web) → registra la app con nombre (ej. <em>rentalos-web</em>).<br>
+            Firebase te mostrará un bloque <code>firebaseConfig</code>. Cópialo completo. Luego en <strong>index.html</strong> busca la sección marcada con 🔧 y pega tus valores reales:
+          </div>
+          <div class="gd-code">const firebaseConfig = {
+  apiKey:            "AIzaSy...",
+  authDomain:        "rentalos-prod.firebaseapp.com",
+  projectId:         "rentalos-prod",
+  storageBucket:     "rentalos-prod.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123456789:web:abc123"
+};</div>
+          <div class="gd-warn"><strong>⚠️ Importante:</strong> El apiKey de Firebase para web es público por diseño — no lo escondas en variables de entorno. La seguridad real se configura con Firestore Rules y Auth (pasos siguientes).</div>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">3</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Authentication</div>
+          <div class="gd-h">Activar Phone Authentication (SMS)</div>
+          <div class="gd-p">
+            En la consola → <strong>Build → Authentication → Get started</strong><br>
+            En la pestaña <strong>"Sign-in method"</strong> → activa <strong>"Phone"</strong> → guarda.<br><br>
+            <strong>Configurar dominios autorizados:</strong> en la misma sección de Authentication → pestaña <strong>"Settings" → "Authorized domains"</strong> → agrega tu dominio de producción (ej. <em>rentalos.com</em>). <code>localhost</code> ya viene incluido para desarrollo.
+          </div>
+          <div class="gd-ok"><strong>✓ Para pruebas locales:</strong> Puedes agregar números de prueba en Authentication → Sign-in method → Phone → "Phone numbers for testing". Ej: +52 449 000 0001 con código 123456. Así evitas cargos de SMS durante desarrollo.</div>
+        </div>
+      </div>
+
+      <!-- PASO 4 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">4</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">reCAPTCHA</div>
+          <div class="gd-h">reCAPTCHA — sin configuración extra necesaria</div>
+          <div class="gd-p">
+            Firebase Phone Auth usa reCAPTCHA automáticamente. El código ya lo configura con <code>RecaptchaVerifier</code>.<br>
+            En producción, debes agregar tu dominio en <strong>Google reCAPTCHA Admin Console</strong> (search.google.com/recaptcha/admin) → tu sitio tiene que estar listado. Firebase ya incluye su propio dominio, pero el tuyo propio necesita registro si usas reCAPTCHA enterprise.
+          </div>
+          <div class="gd-warn"><strong>Nota:</strong> En <code>localhost</code> el reCAPTCHA aparece visible. En producción con dominio verificado, Firebase puede hacer la verificación invisible automáticamente.</div>
+        </div>
+      </div>
+
+      <!-- PASO 5 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">5</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Firestore</div>
+          <div class="gd-h">Activar Firestore Database</div>
+          <div class="gd-p">
+            En la consola → <strong>Build → Firestore Database → Create database</strong><br>
+            Selecciona <strong>"Start in production mode"</strong> (más seguro) → elige la región más cercana a México: <strong>us-central1</strong> o <strong>nam5</strong> → Listo.
+          </div>
+          <div class="gd-p" style="margin-top:8px"><strong>Estructura de colecciones que usa Rentalos:</strong></div>
+          <div class="gd-code">Firestore
+├── users/
+│   └── {uid}/          ← documento por usuario
+│       ├── uid
+│       ├── name
+│       ├── phone
+│       ├── city
+│       ├── colonia
+│       ├── bio
+│       ├── schedule
+│       ├── createdAt
+│       └── updatedAt
+│
+└── listings/
+    └── {auto-id}/      ← documento por publicación
+        ├── uid         ← UID del dueño
+        ├── ownerName
+        ├── ownerPhone
+        ├── title
+        ├── cat
+        ├── desc
+        ├── cond
+        ├── avail
+        ├── zone
+        ├── city
+        ├── emoji
+        ├── createdAt
+        └── updatedAt</div>
+        </div>
+      </div>
+
+      <!-- PASO 6 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">6</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Seguridad</div>
+          <div class="gd-h">Configurar Firestore Security Rules</div>
+          <div class="gd-p">
+            En la consola → Firestore → pestaña <strong>"Rules"</strong> → pega estas reglas y publica:
+          </div>
+          <div class="gd-code">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── USUARIOS ──────────────────────────────
+    match /users/{uid} {
+      // Cualquiera puede leer perfiles (para mostrar nombre en cards)
+      allow read: if true;
+
+      // Solo el propio usuario puede crear/editar su perfil
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.uid == uid
+                    && request.resource.data.phone is string
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 100;
+
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.uid == uid;
+
+      allow delete: if false; // No permitir borrar perfiles
+    }
+
+    // ── PUBLICACIONES ─────────────────────────
+    match /listings/{listingId} {
+      // Cualquiera puede leer publicaciones
+      allow read: if true;
+
+      // Solo usuarios autenticados pueden publicar
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0
+                    && request.resource.data.title.size() <= 200
+                    && request.resource.data.cat in [
+                         'herramientas','servicios','hogar','jardin',
+                         'electrodomesticos','deporte','tecnologia',
+                         'vehiculos','otro'
+                       ];
+
+      // Solo el dueño puede editar su publicación
+      allow update: if request.auth != null
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid;
+
+      // Solo el dueño puede eliminar su publicación
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+  }
+}</div>
+          <div class="gd-ok"><strong>✓ Estas reglas garantizan:</strong> lectura pública, escritura solo autenticada, edición/borrado solo del dueño, validación de campos requeridos, y lista blanca de categorías.</div>
+        </div>
+      </div>
+
+      <!-- PASO 7 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">7</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Probar localmente</div>
+          <div class="gd-h">Probar Phone Auth en localhost</div>
+          <div class="gd-p">
+            Abre el archivo <code>index.html</code> directamente en el navegador con Live Server (extensión de VS Code) o desde un servidor local. <strong>NO</strong> abras el archivo directamente con <code>file://</code> — Firebase requiere un servidor HTTP aunque sea local.
+          </div>
+          <div class="gd-p" style="margin-top:8px">Opciones rápidas:</div>
+          <div class="gd-code"># Opción 1 — Python (ya instalado en Mac/Linux)
+python3 -m http.server 8080
+# Luego abre: http://localhost:8080
+
+# Opción 2 — Node.js
+npx serve .
+# Luego abre la URL que muestre
+
+# Opción 3 — VS Code Live Server
+# Click derecho en index.html → "Open with Live Server"</div>
+          <div class="gd-ok"><strong>✓ Números de prueba:</strong> En Firebase Auth → Sign-in method → Phone, agrega un número ficticio (ej. +52 449 000 0001) con un código fijo (ej. 123456). Así puedes probar sin gastar SMS reales.</div>
+        </div>
+      </div>
+
+      <!-- PASO 8 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">8</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Despliegue</div>
+          <div class="gd-h">Publicar en producción</div>
+          <div class="gd-p"><strong>Opción A — Firebase Hosting (recomendada, gratis):</strong></div>
+          <div class="gd-code"># 1. Instalar Firebase CLI
+npm install -g firebase-tools
+
+# 2. Login
+firebase login
+
+# 3. En la carpeta del proyecto
+firebase init hosting
+# → Selecciona tu proyecto
+# → Public directory: . (punto, el directorio actual)
+# → Single-page app: No
+# → Overwrite index.html: No
+
+# 4. Desplegar
+firebase deploy</div>
+          <div class="gd-p" style="margin-top:12px"><strong>Opción B — Netlify (drag and drop):</strong><br>
+          Ve a <strong>app.netlify.com</strong> → "Add new site" → "Deploy manually" → arrastra tu carpeta. Listo. Te da HTTPS automático.</div>
+          <div class="gd-p" style="margin-top:12px"><strong>Opción C — GitHub Pages:</strong><br>
+          Sube el archivo a un repositorio público en GitHub → Settings → Pages → Deploy from branch (main, / root).</div>
+        </div>
+      </div>
+
+      <!-- PASO 9 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">9</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Costos y límites</div>
+          <div class="gd-h">Costos Firebase (plan Spark — gratuito)</div>
+          <div class="gd-p">El plan Spark de Firebase es <strong>gratuito</strong> e incluye:</div>
+          <div class="gd-code">Firestore: 1 GB almacenamiento, 50k lecturas/día, 20k escrituras/día
+Auth: 10,000 verificaciones por teléfono/mes (gratis)
+Hosting: 10 GB/mes transferencia, 1 GB almacenamiento
+Functions: No incluido en este proyecto</div>
+          <div class="gd-warn"><strong>⚠️ Anti-abuso de SMS:</strong> Firebase limita automáticamente los SMS. Para proyectos en producción agrega una capa extra: activa "App Check" en Firebase console y configura un presupuesto de alerta en Google Cloud Console para recibir notificación si el uso dispara.</div>
+        </div>
+      </div>
+
+      <!-- PASO 10 -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">10</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Errores comunes</div>
+          <div class="gd-h">Troubleshooting — errores más frecuentes</div>
+          <div class="gd-code">Error: auth/invalid-phone-number
+→ El número debe incluir código de país: +52 449 123 4567
+   (no espacios ni guiones en el envío, el código los limpia)
+
+Error: auth/too-many-requests
+→ Firebase bloqueó temporalmente por intentos repetidos.
+   Espera 1-2 minutos o usa números de prueba para desarrollo.
+
+Error: auth/captcha-check-failed  
+→ reCAPTCHA no pasó. Asegúrate de abrir el sitio en un
+   servidor HTTP (no file://). Prueba en modo incógnito.
+
+Error: Missing or insufficient permissions
+→ Las Firestore Rules están bloqueando. Verifica que el
+   usuario esté autenticado y que publicaste las rules.
+
+reCAPTCHA no aparece en el modal
+→ El widget se monta cuando abres el modal por primera vez.
+   Si se monta dos veces, refresca la página.
+
+Listados no cargan en producción
+→ Verifica que el dominio esté en Authentication → 
+   Authorized domains en la consola de Firebase.</div>
+        </div>
+      </div>
+
+      <!-- PASO 11 — Recomendaciones futuras -->
+      <div class="gd-step" data-rv>
+        <div class="gd-num">★</div>
+        <div class="gd-cnt">
+          <div class="gd-tag">Próximos pasos</div>
+          <div class="gd-h">Recomendaciones para escalar Rentalos</div>
+          <div class="gd-p">
+            <strong>Corto plazo:</strong><br>
+            • Firebase Storage para fotos reales de los objetos<br>
+            • Firestore index compuesto (cat + createdAt) para filtros rápidos<br>
+            • Firebase App Check para prevenir abuso de la API<br><br>
+            <strong>Mediano plazo:</strong><br>
+            • Cloud Functions para enviar notificaciones o moderar contenido<br>
+            • Algolia o Typesense para búsqueda full-text avanzada<br>
+            • Sistema de reputación/calificaciones entre vecinos<br><br>
+            <strong>Largo plazo:</strong><br>
+            • App móvil con React Native + Firebase (mismo backend)<br>
+            • Expansión a más ciudades con multi-tenant por zona<br>
+            • Integración con WhatsApp Business API
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="gd-footer">
+      <div class="gd-footer-note">
+        ¿Dudas? El código ya tiene todo configurado — solo necesitas pegar tu firebaseConfig real.<br>
+        <strong>Tiempo estimado de setup: 15–25 minutos desde cero.</strong>
+      </div>
+      <button class="btn btn-or btn-sm" onclick="closeGuide()">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     FIREBASE SDK (v9 modular via CDN compat)
+════════════════════════════════ -->
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  LOADER — runs immediately, independent of Firebase module
+// ─────────────────────────────────────────────────────────────
+function startLoader() {
+  const fill = document.getElementById('ldr-fill');
+  const pct  = document.getElementById('ldr-pct');
+  const ldr  = document.getElementById('ldr');
+  if (!fill || !pct || !ldr) return;
+  let v = 0;
+  const iv = setInterval(() => {
+    v += Math.random() * 18 + 6;
+    if (v >= 100) {
+      v = 100;
+      clearInterval(iv);
+      setTimeout(() => ldr.classList.add('done'), 300);
+    }
+    fill.style.width  = v + '%';
+    pct.textContent   = Math.round(v) + '%';
+  }, 60);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  startLoader();
+});
+</script>
+<script type="module">
+// ─────────────────────────────────────────────────────────────
+//  FIREBASE CONFIG
+//  ⚠️  REEMPLAZA estos valores con tu firebaseConfig real
+//  Obtenerlos en: console.firebase.google.com → tu proyecto → 
+//  Configuración del proyecto → Aplicaciones web → SDK setup
+// ─────────────────────────────────────────────────────────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  onAuthStateChanged,
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  where,
+  serverTimestamp,
+  onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ═══════════════════════════════════════════
+//  🔧 TU FIREBASE CONFIG AQUÍ ↓
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "TU_API_KEY",
+  authDomain:        "TU_PROJECT.firebaseapp.com",
+  projectId:         "TU_PROJECT_ID",
+  storageBucket:     "TU_PROJECT.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId:             "TU_APP_ID"
+};
+// ═══════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+//  INIT FIREBASE
+// ─────────────────────────────────────────────────────────────
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// Persistencia local: la sesión sobrevive al cierre del navegador
+setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+// ─────────────────────────────────────────────────────────────
+//  ESTADO GLOBAL
+// ─────────────────────────────────────────────────────────────
+let currentUser    = null;   // Firebase User object
+let currentProfile = null;   // Firestore profile document
+let confirmResult  = null;   // PhoneAuth confirmation result
+let allListings    = [];     // Cache de publicaciones
+let curFilter      = 'todos';
+let curSearch      = '';
+
+// Exponer a window para acceso desde event handlers HTML
+window._FB = { auth, db, collection, addDoc, getDocs, getDoc, doc, setDoc,
+               deleteDoc, query, orderBy, where, serverTimestamp, onSnapshot };
+
+// ─────────────────────────────────────────────────────────────
+//  AUTH STATE LISTENER  — corazón de toda la sesión
+// ─────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    // Cargar perfil desde Firestore
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      currentProfile = snap.exists() ? snap.data() : null;
+    } catch (e) {
+      console.warn('Error loading profile:', e);
+    }
+    updateAuthUI(true);
+    loadListings(); // Re-render para mostrar badges de "mis publicaciones"
+  } else {
+    currentUser    = null;
+    currentProfile = null;
+    updateAuthUI(false);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+//  UI según estado de auth
+// ─────────────────────────────────────────────────────────────
+function updateAuthUI(isAuth) {
+  const navAuth   = document.getElementById('nav-auth');
+  const navUnauth = document.getElementById('nav-unauth');
+  const sAccountGrp = document.getElementById('s-account-grp');
+  const sAuthBtn  = document.getElementById('s-auth-btn');
+  const sLogoutBtn = document.getElementById('s-logout-btn');
+
+  if (isAuth && currentProfile) {
+    navAuth.style.display   = 'flex';
+    navUnauth.style.display = 'none';
+
+    // Avatar con inicial
+    const ini = (currentProfile.name || 'U').charAt(0).toUpperCase();
+    document.getElementById('nav-ava-initial').textContent = ini;
+    document.getElementById('um-name').textContent  = currentProfile.name || 'Usuario';
+    document.getElementById('um-phone').textContent = currentUser.phoneNumber || '—';
+
+    // Settings panel
+    sAccountGrp.style.display = '';
+    document.getElementById('s-name-val').textContent  = currentProfile.name || '—';
+    document.getElementById('s-phone-val').textContent = currentUser.phoneNumber || '—';
+    document.getElementById('s-city-val').textContent  = currentProfile.city || '—';
+    sAuthBtn.style.display   = 'none';
+    sLogoutBtn.style.display = '';
+  } else {
+    navAuth.style.display   = 'none';
+    navUnauth.style.display = 'flex';
+    sAccountGrp.style.display = 'none';
+    sAuthBtn.style.display   = '';
+    sLogoutBtn.style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PHONE AUTH — Step 1: enviar OTP
+// ─────────────────────────────────────────────────────────────
+let recaptchaWidgetId = null;
+
+function setupRecaptcha() {
+  if (window.recaptchaVerifier) return; // Ya montado
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    size: 'normal',
+    callback: () => { /* reCAPTCHA resuelto, habilitamos el botón */ },
+    'expired-callback': () => { showToast('reCAPTCHA expiró, recarga la página'); }
+  });
+  window.recaptchaVerifier.render().then(id => { recaptchaWidgetId = id; });
+}
+
+window.sendOTP = async function() {
+  const name  = sanitize(document.getElementById('f-name').value.trim());
+  const phone = sanitize(document.getElementById('f-phone').value.trim());
+
+  if (!name)  { showToast('Ingresa tu nombre completo'); return; }
+  if (!phone || phone.length < 10) { showToast('Ingresa un número válido con lada (+52...)'); return; }
+
+  const btn = document.getElementById('btn-send-otp');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    setupRecaptcha();
+    confirmResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+    document.getElementById('otp-phone-display').textContent = phone;
+    goStep(2);
+    showToast('✓ Código enviado por SMS');
+  } catch (err) {
+    console.error('sendOTP error:', err);
+    showToast(friendlyAuthError(err.code));
+    // Reset reCAPTCHA
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar código →';
+  }
+};
+
+window.resendOTP = async function() {
+  goStep(1);
+  if (window.recaptchaVerifier) {
+    window.recaptchaVerifier.clear();
+    window.recaptchaVerifier = null;
+  }
+  showToast('Ingresa tu número nuevamente');
+};
+
+// ─────────────────────────────────────────────────────────────
+//  PHONE AUTH — Step 2: verificar OTP
+// ─────────────────────────────────────────────────────────────
+window.verifyOTP = async function() {
+  const code = ['otp1','otp2','otp3','otp4','otp5','otp6']
+    .map(id => document.getElementById(id).value)
+    .join('');
+
+  if (code.length < 6) { showToast('Ingresa los 6 dígitos'); return; }
+  if (!confirmResult)   { showToast('Inicia el proceso desde el paso 1'); return; }
+
+  const loading = document.getElementById('otp-loading');
+  const btn     = document.getElementById('btn-verify');
+  loading.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    await confirmResult.confirm(code);
+    // onAuthStateChanged se dispara y lleva a step 3 si no hay perfil aún
+    goStep(3);
+  } catch (err) {
+    console.error('verifyOTP error:', err);
+    showToast(friendlyAuthError(err.code));
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  PHONE AUTH — Step 3: guardar perfil en Firestore
+// ─────────────────────────────────────────────────────────────
+window.finishProfile = async function() {
+  if (!currentUser) { showToast('Error de sesión, intenta de nuevo'); return; }
+
+  const name     = sanitize(document.getElementById('f-name').value.trim());
+  const city     = sanitize(document.getElementById('f-city').value.trim() || 'Aguascalientes');
+  const colonia  = sanitize(document.getElementById('f-col').value.trim());
+  const bio      = sanitize(document.getElementById('f-bio').value.trim());
+  const schedule = document.getElementById('f-schedule').value;
+
+  if (!name) { showToast('Ingresa tu nombre'); return; }
+
+  const loading = document.getElementById('profile-loading');
+  const btn     = document.getElementById('btn-finish');
+  loading.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    const profileData = {
+      uid:       currentUser.uid,
+      name,
+      city,
+      colonia,
+      bio,
+      schedule,
+      phone:     currentUser.phoneNumber,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    // Guardar en Firestore: users/{uid}
+    await setDoc(doc(db, 'users', currentUser.uid), profileData, { merge: true });
+    currentProfile = profileData;
+    updateAuthUI(true);
+
+    // Show success step
+    document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.m-step-ind').forEach(s => s.classList.add('done'));
+    document.getElementById('sv-ok').classList.add('active');
+    showToast('¡Cuenta creada! 🎉');
+  } catch (err) {
+    console.error('finishProfile error:', err);
+    showToast('Error al guardar perfil. Intenta de nuevo.');
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  LOGOUT
+// ─────────────────────────────────────────────────────────────
+window.handleLogout = async function() {
+  try {
+    await signOut(auth);
+    showToast('Sesión cerrada');
+    closeUserMenu();
+    closeSett();
+    loadListings();
+  } catch (err) {
+    showToast('Error al cerrar sesión');
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  FIRESTORE — Cargar publicaciones (real-time listener)
+// ─────────────────────────────────────────────────────────────
+let unsubscribeListings = null;
+
+function loadListings() {
+  // Limpiar listener anterior si existe
+  if (unsubscribeListings) { unsubscribeListings(); }
+
+  showSkeletons();
+
+  const q = query(collection(db, 'listings'), orderBy('createdAt', 'desc'));
+
+  unsubscribeListings = onSnapshot(q, (snapshot) => {
+    allListings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateCategoryCounters();
+    renderCards(getFiltered());
+  }, (err) => {
+    console.error('Listings snapshot error:', err);
+    // Fallback: mostrar datos de demostración
+    allListings = DEMO_DATA;
+    updateCategoryCounters();
+    renderCards(getFiltered());
+    showToast('Modo demo — conecta Firebase para datos reales');
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FIRESTORE — Publicar objeto
+// ─────────────────────────────────────────────────────────────
+window.submitPub = async function() {
+  if (!currentUser || !currentProfile) {
+    showToast('Necesitas iniciar sesión primero');
+    closePub();
+    openModal();
+    return;
+  }
+
+  const title  = sanitize(document.getElementById('pub-title').value.trim());
+  const cat    = document.getElementById('pub-cat').value;
+  const desc   = sanitize(document.getElementById('pub-desc').value.trim());
+  const avail  = document.getElementById('pub-avail').value;
+  const zone   = sanitize(document.getElementById('pub-zone').value.trim());
+  const cond   = document.querySelector('.cond-pill.on')?.dataset.val || 'bueno';
+
+  if (!title) { showToast('Ingresa un título para tu publicación'); return; }
+  if (!cat)   { showToast('Selecciona una categoría'); return; }
+
+  const loading = document.getElementById('pub-loading');
+  const btn     = document.getElementById('btn-pub');
+  loading.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    const listing = {
+      uid:       currentUser.uid,
+      ownerName: currentProfile.name,
+      ownerPhone: currentUser.phoneNumber,
+      city:      currentProfile.city || 'Aguascalientes',
+      colonia:   currentProfile.colonia || '',
+      title,
+      cat,
+      desc,
+      cond,
+      avail,
+      zone,
+      emoji:     CAT_EMOJIS[cat] || '📦',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    await addDoc(collection(db, 'listings'), listing);
+    closePub();
+    resetPubForm();
+    showToast('✓ ¡Publicado! Ya está visible para la comunidad 🎉');
+    document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    console.error('submitPub error:', err);
+    showToast('Error al publicar. Intenta de nuevo.');
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  FIRESTORE — Eliminar publicación propia
+// ─────────────────────────────────────────────────────────────
+window.deleteListing = async function(listingId, ownerId) {
+  if (!currentUser || currentUser.uid !== ownerId) {
+    showToast('No puedes eliminar esta publicación');
+    return;
+  }
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  try {
+    await deleteDoc(doc(db, 'listings', listingId));
+    showToast('Publicación eliminada');
+  } catch (err) {
+    showToast('Error al eliminar');
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+//  RENDER CARDS
+// ─────────────────────────────────────────────────────────────
+function renderCards(list) {
+  const grid = document.getElementById('cards');
+  document.getElementById('cards-count-n').textContent = list.length;
+
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-ico">🔍</div>
+        <div class="empty-t">Sin resultados</div>
+        <div class="empty-d">Prueba con otro término o sé el primero en publicar algo aquí.</div>
+        <button class="btn btn-or" onclick="handlePublish()" style="margin-top:8px">Publicar objeto</button>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map((d, i) => buildCardHTML(d, i)).join('');
+
+  // Animate in with stagger
+  const cards = grid.querySelectorAll('.card');
+  cards.forEach((c, i) => {
+    c.style.animationDelay = (i * 0.05) + 's';
+    setTimeout(() => c.classList.add('visible'), 40 + i * 50);
+  });
+}
+
+function buildCardHTML(d, i) {
+  const isOwner = currentUser && currentUser.uid === d.uid;
+  const ini     = (d.ownerName || 'U').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+  const condMap = { nuevo: 'Como nuevo', bueno: 'Buen estado', regular: 'Uso regular', servicio: 'Servicio' };
+  const cond    = condMap[d.cond] || d.cond || 'Buen estado';
+  const city    = d.city || 'Aguascalientes';
+
+  return `
+  <div class="card" data-cat="${escapeHtml(d.cat)}" data-id="${escapeHtml(d.id)}">
+    <div class="c-badge">${escapeHtml(d.cat)}</div>
+    ${isOwner ? `<div class="c-mine-badge">Mía</div>` : ''}
+    ${isOwner ? `<button class="c-delete-btn" onclick="event.stopPropagation();deleteListing('${d.id}','${d.uid}')" title="Eliminar publicación">✕</button>` : ''}
+    <div class="c-img">${escapeHtml(d.emoji || '📦')}</div>
+    <div class="c-body">
+      <div class="c-cat">${escapeHtml(d.cat)}</div>
+      <div class="c-title">${escapeHtml(d.title)}</div>
+      <div class="c-desc">${escapeHtml(d.desc || '')}</div>
+      <div class="c-cond"><span class="cond-dot"></span>${escapeHtml(cond)}</div>
+      <div class="c-meta">
+        <div class="ava">${escapeHtml(ini)}</div>
+        <span class="c-owner">${escapeHtml(d.ownerName || 'Anónimo')}</span>
+        <span class="c-loc">📍 ${escapeHtml(city)}</span>
+      </div>
+      <button class="btn-wa" onclick="openWA('${escapeHtml(d.ownerPhone || '')}','${escapeHtml(d.title)}')">
+        <svg class="wa-svg" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Contactar por WhatsApp
+      </button>
+    </div>
+  </div>`;
+}
+
+function showSkeletons() {
+  const grid = document.getElementById('cards');
+  grid.innerHTML = Array(6).fill('').map(() => `
+    <div class="skel-card">
+      <div class="skel-img skeleton"></div>
+      <div class="skel-body">
+        <div class="skel-line sm skeleton"></div>
+        <div class="skel-line md skeleton"></div>
+        <div class="skel-line lg skeleton"></div>
+        <div class="skel-btn skeleton"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FILTER LOGIC
+// ─────────────────────────────────────────────────────────────
+function getFiltered() {
+  return allListings.filter(d => {
+    const matchCat = curFilter === 'todos' || d.cat === curFilter;
+    const q = curSearch.toLowerCase();
+    const matchQ = !q ||
+      (d.title  || '').toLowerCase().includes(q) ||
+      (d.desc   || '').toLowerCase().includes(q) ||
+      (d.cat    || '').toLowerCase().includes(q) ||
+      (d.city   || '').toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+}
+
+window.filterCards = function(val) {
+  curSearch = val;
+  renderCards(getFiltered());
+};
+
+window.setFilter = function(cat, el) {
+  curFilter = cat;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderCards(getFiltered());
+};
+
+window.jumpToFilter = function(cat) {
+  curFilter = cat;
+  document.querySelectorAll('.chip').forEach(c => {
+    c.classList.toggle('on', c.textContent.toLowerCase().includes(cat));
+  });
+  renderCards(getFiltered());
+  document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+};
+
+function updateCategoryCounters() {
+  const cats = ['herramientas','servicios','hogar','jardin','electrodomesticos','deporte','tecnologia','vehiculos'];
+  cats.forEach(cat => {
+    const el = document.getElementById('cnt-' + cat);
+    if (!el) return;
+    const n = allListings.filter(d => d.cat === cat).length;
+    el.textContent = n + (cat === 'servicios' ? ' publicaciones' : ' objetos');
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  WHATSAPP
+// ─────────────────────────────────────────────────────────────
+window.openWA = function(phone, title) {
+  if (!phone) { showToast('Este usuario no tiene WhatsApp registrado'); return; }
+  const clean = phone.replace(/\D/g, '');
+  const msg = encodeURIComponent(`Hola, vi en Rentalos.com que tienes "${title}" disponible. ¿Me lo puedes prestar?`);
+  window.open(`https://wa.me/${clean}?text=${msg}`, '_blank', 'noopener');
+};
+
+// ─────────────────────────────────────────────────────────────
+//  MODAL WIZARD — step control
+// ─────────────────────────────────────────────────────────────
+let currentStep = 1;
+
+window.openModal = function() {
+  if (currentUser && currentProfile) {
+    showToast('Ya tienes sesión activa 👋');
+    return;
+  }
+  document.getElementById('modal-ov').classList.add('open');
+  goStep(1, true);
+};
+window.closeModal = function() {
+  document.getElementById('modal-ov').classList.remove('open');
+};
+window.modalOvClick = function(e) {
+  if (e.target === document.getElementById('modal-ov')) closeModal();
+};
+
+window.goStep = function(n) {
+  currentStep = n;
+  document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+  const sv = document.getElementById('sv-' + n);
+  if (sv) sv.classList.add('active');
+  for (let i = 1; i <= 3; i++) {
+    const si = document.getElementById('si-' + i);
+    if (!si) continue;
+    si.classList.remove('active', 'done');
+    if (i < n) si.classList.add('done');
+    else if (i === n) si.classList.add('active');
+  }
+};
+
+window.otpNext = function(el, nextId) {
+  if (el.value && nextId) document.getElementById(nextId)?.focus();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  PUBLISH MODAL
+// ─────────────────────────────────────────────────────────────
+window.handlePublish = function() {
+  if (!currentUser || !currentProfile) {
+    showToast('Necesitas una cuenta para publicar');
+    openModal();
+    return;
+  }
+  openPub();
+};
+
+window.openPub = function() {
+  document.getElementById('pub-ov').classList.add('open');
+};
+window.closePub = function() {
+  document.getElementById('pub-ov').classList.remove('open');
+};
+window.pubOvClick = function(e) {
+  if (e.target === document.getElementById('pub-ov')) closePub();
+};
+
+window.setCond = function(el) {
+  document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+};
+
+function resetPubForm() {
+  document.getElementById('pub-title').value = '';
+  document.getElementById('pub-cat').value   = '';
+  document.getElementById('pub-desc').value  = '';
+  document.getElementById('pub-zone').value  = '';
+  document.getElementById('pub-avail').value = 'now';
+  document.getElementById('obj-prev').innerHTML = '';
+  document.querySelectorAll('.cond-pill').forEach((p,i) => {
+    p.classList.toggle('on', i === 0);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PHOTO PREVIEW
+// ─────────────────────────────────────────────────────────────
+window.triggerPhoto = function(id) { document.getElementById(id).click(); };
+
+window.previewPhoto = function(inp, prevId) {
+  const f = inp.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    document.getElementById(prevId).innerHTML =
+      `<img class="photo-prev" src="${e.target.result}" alt="Foto de perfil" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin-top:10px;border:2px solid var(--bdr2)">`;
+  };
+  r.readAsDataURL(f);
+};
+
+window.previewMulti = function(inp, prevId) {
+  const d = document.getElementById(prevId);
+  d.innerHTML = '';
+  Array.from(inp.files).slice(0, 4).forEach(f => {
+    const r = new FileReader();
+    r.onload = e => {
+      const img = document.createElement('img');
+      img.className = 'photo-prev';
+      img.src = e.target.result;
+      img.alt = 'Foto del objeto';
+      d.appendChild(img);
+    };
+    r.readAsDataURL(f);
+  });
+};
+
+// ─────────────────────────────────────────────────────────────
+//  SETTINGS PANEL
+// ─────────────────────────────────────────────────────────────
+window.openSett  = function() { document.getElementById('s-ov').classList.add('open'); document.getElementById('s-pnl').classList.add('open'); };
+window.closeSett = function() { document.getElementById('s-ov').classList.remove('open'); document.getElementById('s-pnl').classList.remove('open'); };
+window.setDark   = function(el) { document.documentElement.setAttribute('data-theme', el.checked ? 'dark' : 'light'); showToast(el.checked ? '🌙 Modo oscuro' : '☀️ Modo claro'); };
+window.setCompact = function(el) { document.getElementById('cards').style.gridTemplateColumns = el.checked ? 'repeat(auto-fill,minmax(220px,1fr))' : ''; showToast(el.checked ? 'Vista compacta' : 'Vista normal'); };
+window.setAnim   = function(el) { document.body.style.setProperty('--ease', el.checked ? 'linear' : 'cubic-bezier(.4,0,.2,1)'); showToast(el.checked ? 'Animaciones reducidas' : 'Animaciones completas'); };
+window.setAccent = function(c, d, p, el) {
+  document.documentElement.style.setProperty('--or', c);
+  document.documentElement.style.setProperty('--or-dark', d);
+  document.documentElement.style.setProperty('--or-pale', p);
+  document.documentElement.style.setProperty('--or-glow', c + '28');
+  document.documentElement.style.setProperty('--or-subtle', c + '0D');
+  document.querySelectorAll('.col-o').forEach(o => o.classList.remove('on'));
+  el.classList.add('on');
+  showToast('Color actualizado');
+};
+
+// ─────────────────────────────────────────────────────────────
+//  USER MENU
+// ─────────────────────────────────────────────────────────────
+window.toggleUserMenu = function() {
+  document.getElementById('user-menu').classList.toggle('open');
+};
+window.closeUserMenu = function() {
+  document.getElementById('user-menu').classList.remove('open');
+};
+document.addEventListener('click', e => {
+  const menu = document.getElementById('user-menu');
+  const ava  = document.getElementById('nav-ava');
+  if (menu && ava && !ava.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
+window.scrollToMyListings = function() {
+  document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+};
+
+// ─────────────────────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────────────────────
+let toastTimeout;
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
+};
+
+// ─────────────────────────────────────────────────────────────
+//  SECURITY HELPERS
+// ─────────────────────────────────────────────────────────────
+function sanitize(str) {
+  // Strip HTML tags and trim — basic XSS prevention for text inputs
+  return String(str).replace(/<[^>]*>/g, '').trim().substring(0, 500);
+}
+
+function escapeHtml(str) {
+  const map = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' };
+  return String(str || '').replace(/[&<>"']/g, m => map[m]);
+}
+
+function friendlyAuthError(code) {
+  const msgs = {
+    'auth/invalid-phone-number':    'Número de teléfono inválido. Incluye la lada (+52...)',
+    'auth/too-many-requests':       'Demasiados intentos. Espera unos minutos.',
+    'auth/invalid-verification-code': 'Código incorrecto. Revísalo e intenta de nuevo.',
+    'auth/code-expired':            'El código expiró. Solicita uno nuevo.',
+    'auth/quota-exceeded':          'Límite de SMS alcanzado. Intenta mañana.',
+    'auth/captcha-check-failed':    'Verificación de reCAPTCHA fallida. Intenta de nuevo.',
+    'auth/network-request-failed':  'Sin conexión. Verifica tu internet.',
+  };
+  return msgs[code] || 'Error inesperado. Intenta de nuevo.';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FIREBASE SETUP GUIDE MODAL
+// ─────────────────────────────────────────────────────────────
+window.openGuide = function() {
+  document.getElementById('guide-ov').classList.add('open');
+  // Trigger scroll-reveal for guide steps
+  setTimeout(() => {
+    document.querySelectorAll('#guide-modal [data-rv]').forEach(el => rv.observe(el));
+  }, 100);
+};
+window.closeGuide = function() {
+  document.getElementById('guide-ov').classList.remove('open');
+};
+window.guideOvClick = function(e) {
+  if (e.target === document.getElementById('guide-ov')) closeGuide();
+};
+
+// ─────────────────────────────────────────────────────────────
+//  SCROLL EFFECTS
+// ─────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 20);
+  const d = document.documentElement;
+  const tot = d.scrollHeight - d.clientHeight;
+  if (tot > 0) document.getElementById('rp').style.width = (window.scrollY / tot * 100) + '%';
+}, { passive: true });
+
+// Scroll reveal
+const rv = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('shown'); rv.unobserve(e.target); } });
+}, { threshold: .08 });
+document.querySelectorAll('[data-rv]').forEach(el => rv.observe(el));
+
+// Steps & cats stagger
+const stagger = new IntersectionObserver(es => {
+  es.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      stagger.unobserve(e.target);
+    }
+  });
+}, { threshold: .1 });
+document.querySelectorAll('.step, .cat').forEach(el => stagger.observe(el));
+
+// ─────────────────────────────────────────────────────────────
+//  ANIMATED COUNTERS
+// ─────────────────────────────────────────────────────────────
+const cntObs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (e.isIntersecting) {
+      const el = e.target, target = +el.dataset.cnt;
+      let current = 0;
+      const iv = setInterval(() => {
+        current += target / 55;
+        if (current >= target) { current = target; clearInterval(iv); }
+        el.textContent = Math.round(current).toLocaleString('es-MX');
+      }, 20);
+      cntObs.unobserve(el);
+    }
+  });
+}, { threshold: .5 });
+document.querySelectorAll('[data-cnt]').forEach(el => cntObs.observe(el));
+
+// ─────────────────────────────────────────────────────────────
+//  LOADER — arrancamos inmediatamente (el módulo ya está listo)
+//  No usamos window.addEventListener('load') porque los módulos
+//  ES son deferred y ese evento puede ya haber disparado.
+</script>
+</body>
+</html>
