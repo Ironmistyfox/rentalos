@@ -37,6 +37,16 @@
       font-size: max(16px, 1em);
     }
 
+    /* ── Global focus-visible ── */
+    :focus { outline: none; }
+    :focus-visible {
+      outline: 2px solid var(--green-dark);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+    /* Tighter radius for round elements */
+    button:focus-visible, a:focus-visible { border-radius: 6px; }
+
     /* ── NAV ── */
     nav:not(.bottom-nav) {
       position: sticky; top: 0; z-index: 100;
@@ -128,7 +138,7 @@
       display: flex; gap: 12px; flex-wrap: wrap;
     }
     .btn-hero-primary {
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       padding: 13px 28px; border-radius: 10px;
       font-family: inherit; font-weight: 700; font-size: .95rem;
       cursor: pointer;
@@ -292,7 +302,7 @@
     .hc-loc { font-size: .70rem; color: var(--muted); margin-top: 2px; }
     .hc-wa {
       display: flex; align-items: center; gap: 5px;
-      background: #25D366; color: white;
+      background: #1aad4c; color: white;
       border: none; border-radius: 8px; padding: 7px 11px;
       font-family: inherit; font-size: .76rem; font-weight: 700;
       cursor: pointer; text-decoration: none;
@@ -300,7 +310,7 @@
       white-space: nowrap;
     }
     @media (hover: hover) and (pointer: fine) {
-      .hc-wa:hover { background: #128C7E; transform: scale(1.04); }
+      .hc-wa:hover { background: #159940; transform: scale(1.04); }
     }
     .hc-wa:active { transform: scale(0.96); }
     .hc-wa svg { width: 14px; height: 14px; fill: white; flex-shrink: 0; }
@@ -375,7 +385,7 @@
     }
     .search-bar input::placeholder { color: var(--muted); }
     .search-btn {
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       padding: 0 24px; font-family: inherit; font-weight: 700; font-size: .9rem;
       cursor: pointer; white-space: nowrap;
     }
@@ -469,7 +479,7 @@
 
     .btn-wa {
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      background: #25D366; color: white; border: none;
+      background: #128C7E; color: white; border: none;
       padding: 11px 0; border-radius: 10px;
       font-family: inherit; font-weight: 700; font-size: .88rem;
       cursor: pointer; text-decoration: none; margin-top: 14px; width: 100%;
@@ -621,10 +631,10 @@
       transition: background .2s, transform .15s, box-shadow .18s;
     }
     .card-contact.wa {
-      background: #25D366; color: white;
+      background: #1aad4c; color: white;
     }
     @media (hover: hover) and (pointer: fine) {
-      .card-contact.wa:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(37,211,102,.28); }
+      .card-contact.wa:hover { background: #159940; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(26,173,76,.28); }
     }
     .card-contact.gate {
       background: var(--green-light); color: var(--green-deep);
@@ -638,15 +648,15 @@
 
     /* ── Rating row visible en la card ── */
     .card-rating {
-      display: flex; align-items: center; gap: 6px;
-      margin-bottom: 8px;
+      display: flex; align-items: center; gap: 5px;
+      margin-bottom: 8px; line-height: 1;
     }
-    .card-rating .stars-inline { display: inline-flex; gap: 1px; line-height: 1; }
-    .card-rating .stars-inline .s { font-size: .8rem; }
+    .card-rating .stars-inline { display: inline-flex; gap: 2px; align-items: center; }
+    .card-rating .stars-inline .s { font-size: .72rem; line-height: 1; }
     .card-rating .stars-inline .s.full  { color: #f59e0b; }
-    .card-rating .stars-inline .s.empty { color: #d1d5db; }
-    .card-rating .rating-val  { font-size: .78rem; font-weight: 700; color: var(--text); }
-    .card-rating .rating-cnt  { font-size: .74rem; color: var(--muted); }
+    .card-rating .stars-inline .s.empty { color: #e5e7eb; }
+    .card-rating .rating-val  { font-size: .78rem; font-weight: 700; color: var(--text-2); }
+    .card-rating .rating-cnt  { font-size: .72rem; color: var(--muted); }
     .card-rating .rating-none { font-size: .74rem; color: var(--muted); font-style: italic; }
 
     /* ── hc-wa auth-gate variant ── */
@@ -779,8 +789,52 @@
 
     /* Image header */
     .detail-img-wrap {
-      position: relative; flex-shrink: 0;
+      position: relative; flex-shrink: 0; overflow: hidden;
     }
+    /* ── Detail carousel ── */
+    .detail-carousel {
+      display: flex; width: 100%;
+      height: 220px;
+      overflow: hidden; position: relative;
+    }
+    @media (min-width: 640px) { .detail-carousel { height: 248px; } }
+    .detail-carousel-track {
+      display: flex;
+      transition: transform 280ms cubic-bezier(0.22,1,0.36,1);
+      height: 100%; will-change: transform;
+    }
+    .detail-carousel-slide {
+      flex-shrink: 0; width: 100%; height: 100%;
+    }
+    .detail-carousel-slide img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      background: var(--green-light);
+    }
+    .detail-car-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(15,31,21,.52); color: white;
+      border: none; border-radius: 50%;
+      width: 32px; height: 32px; font-size: .9rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 140ms, opacity 140ms;
+      z-index: 2;
+    }
+    .detail-car-btn:hover { background: rgba(15,31,21,.82); }
+    .detail-car-btn.prev { left: 10px; }
+    .detail-car-btn.next { right: 46px; }
+    .detail-car-dots {
+      position: absolute; bottom: 10px; right: 10px;
+      display: flex; gap: 5px; z-index: 2;
+    }
+    .detail-car-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,.5); transition: background 180ms;
+    }
+    .detail-car-dot.active { background: #fff; }
+    /* single image — hide controls */
+    .detail-carousel[data-count="1"] .detail-car-btn,
+    .detail-carousel[data-count="1"] .detail-car-dots { display: none; }
+    /* legacy img (fallback kept for safety) */
     .detail-img {
       width: 100%; height: 220px; object-fit: cover; display: block;
       background: var(--green-light);
@@ -849,7 +903,7 @@
 
     .detail-wa-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: #25D366; color: white; border: none;
+      background: #128C7E; color: white; border: none;
       padding: 15px 24px; border-radius: 12px;
       font-family: inherit; font-weight: 700; font-size: 1rem;
       cursor: pointer; text-decoration: none; width: 100%;
@@ -860,7 +914,7 @@
       .detail-wa-btn:hover {
         background: #128C7E;
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(37,211,102,.3);
+        box-shadow: 0 8px 24px rgba(18,140,126,.3);
       }
     }
     .detail-wa-btn:active { transform: scale(0.97); }
@@ -880,7 +934,7 @@
     /* ── WA Auth-gate button ── */
     .detail-wa-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: #25D366; color: white; border: none;
+      background: #128C7E; color: white; border: none;
       padding: 15px 24px; border-radius: 12px;
       font-family: inherit; font-weight: 700; font-size: 1rem;
       cursor: pointer; text-decoration: none; width: 100%;
@@ -891,7 +945,7 @@
       .detail-wa-btn:hover {
         background: #128C7E;
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(37,211,102,.3);
+        box-shadow: 0 8px 24px rgba(18,140,126,.3);
       }
     }
     .detail-wa-btn:active { transform: scale(0.97); }
@@ -906,7 +960,7 @@
       font-size: .83rem; color: var(--muted); line-height: 1.5; margin: 0;
     }
     .detail-wa-gate .gate-btn {
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       padding: 11px 24px; border-radius: 9px;
       font-family: inherit; font-weight: 700; font-size: .9rem;
       cursor: pointer;
@@ -988,14 +1042,14 @@
 
     .btn-submit-review {
       align-self: flex-end;
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       padding: 9px 20px; border-radius: 8px;
       font-family: inherit; font-weight: 700; font-size: .85rem;
       cursor: pointer;
       transition: background 150ms var(--ease-out), transform 120ms var(--ease-out);
     }
     @media (hover: hover) and (pointer: fine) {
-      .btn-submit-review:hover { background: var(--green-dark); transform: translateY(-1px); }
+      .btn-submit-review:hover { background: #155a32; transform: translateY(-1px); }
     }
     .btn-submit-review:active { transform: scale(0.97); }
     .btn-submit-review:disabled { opacity: .5; cursor: not-allowed; transform: none; }
@@ -1095,7 +1149,7 @@
 
     /* ── Btn nav ── */
     .btn-nav {
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       padding: 9px 20px; border-radius: 8px;
       font-family: inherit; font-weight: 700; font-size: .875rem;
       cursor: pointer;
@@ -1196,7 +1250,7 @@
       .btn-wa:hover {
         background: #128C7E;
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(37,211,102,.28);
+        box-shadow: 0 6px 18px rgba(18,140,126,.28);
       }
     }
     .btn-wa:active { transform: scale(0.97); }
@@ -1540,7 +1594,7 @@
     }
     .btn-modal-back:hover { background: #f3f4f6; border-color: #d1d5db; }
     .btn-modal-next {
-      background: var(--green); color: white; border: none;
+      background: var(--green-dark); color: white; border: none;
       border-radius: 10px; padding: 11px 24px;
       font-family: inherit; font-weight: 700; font-size: .9rem;
       cursor: pointer; flex: 1;
@@ -1682,7 +1736,7 @@
     /* ── Submit button ── */
     .btn-auth-submit {
       width: 100%; padding: 13px;
-      background: var(--green); color: white; border: none; border-radius: 10px;
+      background: var(--green-dark); color: white; border: none; border-radius: 10px;
       font-family: inherit; font-size: .95rem; font-weight: 700;
       cursor: pointer;
       transition: background 160ms var(--ease-out), transform 120ms var(--ease-out);
@@ -1800,6 +1854,47 @@
     .nav-dropdown-item:last-child { border-radius: 0 0 14px 14px; }
     .nav-dropdown-item--danger { color: #dc2626; }
     .nav-dropdown-item--danger:hover { background: #fef2f2; color: #b91c1c; }
+
+    /* ── Mis anuncios modal ── */
+    #myListingsModal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.45); overflow-y:auto; padding:24px 16px 40px; }
+    #myListingsModal.open { display:block; }
+    .my-listings-box { background:var(--white); border-radius:20px; max-width:680px; margin:0 auto; padding:28px 24px; }
+    .my-listings-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .my-listings-header h2 { font-size:1.2rem; font-weight:700; }
+    .my-listings-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); line-height:1; padding:4px; }
+    .my-listing-card { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+    .my-listing-card:last-child { border-bottom:none; }
+    .my-listing-thumb { width:72px; height:72px; border-radius:10px; object-fit:cover; background:var(--bg); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; overflow:hidden; }
+    .my-listing-thumb img { width:100%; height:100%; object-fit:cover; }
+    .my-listing-info { flex:1; min-width:0; }
+    .my-listing-title { font-weight:700; font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .my-listing-meta { font-size:.8rem; color:var(--muted); margin-top:3px; }
+    .my-listing-del { background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; padding:5px 10px; font-size:.78rem; cursor:pointer; flex-shrink:0; }
+    .my-listing-del:hover { background:#fef2f2; }
+    .my-listing-edit { background:none; border:1px solid var(--border); color:var(--text-2); border-radius:8px; padding:5px 10px; font-size:.78rem; cursor:pointer; flex-shrink:0; }
+    .my-listing-edit:hover { background:var(--bg); }
+    .my-listing-actions { display:flex; gap:6px; flex-shrink:0; }
+    .my-listings-empty { text-align:center; padding:48px 0 32px; }
+    .my-listings-empty .empty-icon { font-size:3rem; margin-bottom:12px; }
+    .my-listings-empty p { color:var(--muted); font-size:.9rem; margin-bottom:20px; }
+
+    /* ── Mi perfil + modales legales ── */
+    #profileModal, #termsModal, #privacyModal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.45); overflow-y:auto; padding:24px 16px 40px; }
+    #profileModal.open, #termsModal.open, #privacyModal.open { display:block; }
+    .simple-modal-box { background:var(--white); border-radius:20px; max-width:520px; margin:0 auto; padding:28px 24px; }
+    .simple-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+    .simple-modal-header h2 { font-size:1.15rem; font-weight:700; }
+    .simple-modal-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); padding:4px; line-height:1; }
+    .profile-field { margin-bottom:16px; }
+    .profile-field label { display:block; font-size:.8rem; font-weight:600; color:var(--text-2); margin-bottom:5px; }
+    .profile-field input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; font-size:.95rem; font-family:inherit; }
+    .profile-field input:focus { outline:none; border-color:var(--green); }
+    .btn-profile-save { width:100%; padding:12px; background:var(--green-dark); color:#fff; border:none; border-radius:10px; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:6px; transition:background 160ms; }
+    .btn-profile-save:hover { background:#155a32; }
+    .profile-saved-msg { text-align:center; font-size:.82rem; color:var(--green-dark); font-weight:600; margin-top:10px; height:18px; }
+    .legal-body { font-size:.88rem; color:var(--text-2); line-height:1.7; }
+    .legal-body h3 { font-size:.95rem; font-weight:700; color:var(--text); margin:18px 0 6px; }
+    .legal-body p { margin-bottom:10px; }
 
     @media (max-width: 540px) {
       #authModal .modal { border-radius: 16px 16px 0 0; max-height: 95svh; align-self: flex-end; }
@@ -1920,7 +2015,7 @@
     }
     .bottom-nav-btn.publish-btn .bottom-nav-icon {
       width: 42px; height: 42px; border-radius: 13px;
-      background: var(--green);
+      background: var(--green-dark);
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 0;
       box-shadow: 0 4px 12px rgba(34,197,94,.4);
@@ -2343,7 +2438,12 @@
   <div class="detail-modal" id="detailModal">
     <div class="detail-handle"></div>
     <div class="detail-img-wrap">
-      <img class="detail-img" id="detailImg" src="" alt="">
+      <div class="detail-carousel" id="detailCarousel" data-count="1">
+        <div class="detail-carousel-track" id="detailCarTrack"></div>
+        <button class="detail-car-btn prev" id="detailCarPrev" aria-label="Imagen anterior">‹</button>
+        <button class="detail-car-btn next" id="detailCarNext" aria-label="Imagen siguiente">›</button>
+        <div class="detail-car-dots" id="detailCarDots"></div>
+      </div>
       <button class="detail-close" onclick="closeDetailModal()" aria-label="Cerrar">✕</button>
     </div>
     <div class="detail-body">
@@ -2378,6 +2478,74 @@
 </div>
 
 <!-- ══ MODAL: PUBLICAR ARTÍCULO ══ -->
+<!-- ── Mi perfil modal ── -->
+<div id="profileModal" role="dialog" aria-modal="true" aria-label="Mi perfil">
+  <div class="simple-modal-box">
+    <div class="simple-modal-header">
+      <h2>👤 Mi perfil</h2>
+      <button class="simple-modal-close" onclick="closeProfile()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="profile-field"><label for="p-name">Nombre completo</label><input id="p-name" type="text" placeholder="Tu nombre"></div>
+    <div class="profile-field"><label for="p-email">Correo electrónico</label><input id="p-email" type="email" placeholder="tu@correo.com"></div>
+    <div class="profile-field"><label for="p-phone">Teléfono (10 dígitos)</label><input id="p-phone" type="tel" placeholder="5512345678" maxlength="10"></div>
+    <button class="btn-profile-save" onclick="saveProfile()">Guardar cambios</button>
+    <div class="profile-saved-msg" id="profileSavedMsg"></div>
+  </div>
+</div>
+
+<!-- ── Términos de uso modal ── -->
+<div id="termsModal" role="dialog" aria-modal="true" aria-label="Términos de uso">
+  <div class="simple-modal-box">
+    <div class="simple-modal-header">
+      <h2>📄 Términos de uso</h2>
+      <button class="simple-modal-close" onclick="closeLegal('termsModal')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="legal-body">
+      <h3>1. Aceptación</h3>
+      <p>Al usar Rentalos aceptas estos términos. Si no estás de acuerdo, no uses la plataforma.</p>
+      <h3>2. Uso permitido</h3>
+      <p>Rentalos es una plataforma de conexión entre particulares para renta de artículos. Queda prohibido publicar artículos ilegales, falsificar información o acosar a otros usuarios.</p>
+      <h3>3. Responsabilidad</h3>
+      <p>Rentalos actúa como intermediario. El acuerdo de renta es directamente entre las partes. No nos responsabilizamos por daños derivados de las transacciones entre usuarios.</p>
+      <h3>4. Modificaciones</h3>
+      <p>Podemos actualizar estos términos en cualquier momento. El uso continuado implica aceptación de los cambios.</p>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:16px">Última actualización: enero 2025. Este texto es un placeholder — el propietario debe reemplazarlo con su versión legal definitiva.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Aviso de privacidad modal ── -->
+<div id="privacyModal" role="dialog" aria-modal="true" aria-label="Aviso de privacidad">
+  <div class="simple-modal-box">
+    <div class="simple-modal-header">
+      <h2>🔒 Aviso de privacidad</h2>
+      <button class="simple-modal-close" onclick="closeLegal('privacyModal')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="legal-body">
+      <h3>Responsable</h3>
+      <p>Rentalos es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (México).</p>
+      <h3>Datos que recabamos</h3>
+      <p>Nombre, correo electrónico, teléfono y datos de los artículos que publiques. No compartimos tu información con terceros sin tu consentimiento.</p>
+      <h3>Finalidad</h3>
+      <p>Facilitar el contacto entre usuarios interesados en rentar artículos y gestionar tu cuenta en la plataforma.</p>
+      <h3>Derechos ARCO</h3>
+      <p>Puedes ejercer tus derechos de Acceso, Rectificación, Cancelación u Oposición escribiendo a privacidad@rentalos.mx.</p>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:16px">Última actualización: enero 2025. Este texto es un placeholder — el propietario debe reemplazarlo con su aviso legal definitivo.</p>
+    </div>
+  </div>
+</div>
+
+
+<div id="myListingsModal" role="dialog" aria-modal="true" aria-label="Mis anuncios">
+  <div class="my-listings-box">
+    <div class="my-listings-header">
+      <h2>📦 Mis anuncios</h2>
+      <button class="my-listings-close" onclick="closeMyListings()" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="myListingsContent"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="publishModal" role="dialog" aria-modal="true" aria-label="Publicar artículo">
   <div class="modal">
 
@@ -2656,7 +2824,7 @@
 <section class="section" id="listings">
   <div class="section-header">
     <h2 class="section-title">Explorar artículos</h2>
-    <a href="#" class="see-all">Ver todos →</a>
+    <a href="#" class="see-all" onclick="filterCards('',document.querySelector('.pill'));return false;">Ver todos →</a>
   </div>
 
   <div class="filter-pills">
@@ -2836,12 +3004,32 @@
   <div class="footer-bottom">
     <p>© 2025 Rentalos · Hecho en México 🇲🇽 · Plataforma de conexión entre particulares. Rentalos no es parte de los acuerdos entre usuarios.</p>
     <div class="footer-legal-links">
-      <a href="#" onclick="alert('Términos de uso — próximamente');return false;">Términos de uso</a>
-      <a href="#" onclick="alert('Aviso de Privacidad — próximamente');return false;">Aviso de privacidad</a>
+      <a href="#" onclick="openLegal('termsModal');return false;">Términos de uso</a>
+      <a href="#" onclick="openLegal('privacyModal');return false;">Aviso de privacidad</a>
     </div>
   </div>
 </footer>
 
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script>
+/* ══ Firebase init ══════════════════════════════════════════ */
+const _fb = firebase.initializeApp({
+  apiKey:            "AIzaSyBCsg2WI_t8IhAu7BFbEQeh9I-mSXbj4Sk",
+  authDomain:        "rentalos-e2ad2.firebaseapp.com",
+  projectId:         "rentalos-e2ad2",
+  storageBucket:     "rentalos-e2ad2.firebasestorage.app",
+  messagingSenderId: "95425593259",
+  appId:             "1:95425593259:web:45270f6470986fbe34dcee",
+});
+const _db      = firebase.firestore();
+const _auth    = firebase.auth();
+const _storage = firebase.storage();
+/* ─────────────────────────────────────────────────────────── */
+</script>
 <script>
 /* ══════════════════════════════════════════════════════════════
    LISTINGS LAYER  — Capa de artículos
@@ -2963,37 +3151,9 @@ const Listings = {
      para que las estrellas de las cards usen datos reales del servidor.
   ═══════════════════════════════════════════════════════════ */
   api: {
-    async fetch({ q = '', cat = '', page = 1, limit = PAGE_SIZE } = {}) {
-
-      /* ── PRODUCCIÓN: descomentar y borrar la simulación ──
-      const params = new URLSearchParams();
-      if (q)   params.set('q',   q);
-      if (cat) params.set('cat', cat);
-      params.set('page',  page);
-      params.set('limit', limit);
-
-      const headers = {};
-      const token = Auth.token();
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch(`${API_BASE}/listings?${params}`, { headers });
-      if (!res.ok) throw new Error('No se pudieron cargar los artículos');
-      return res.json(); // { items, total, page, totalPages }
-      */
-
-      // ── SIMULACIÓN (borrar cuando tengas backend) ──
-      await delay(480);
-      let results = [...MOCK_LISTINGS];
-      if (cat) results = results.filter(l => l.cat === cat);
-      if (q)   results = results.filter(l =>
-        l.title.toLowerCase().includes(q.toLowerCase()) ||
-        l.desc.toLowerCase().includes(q.toLowerCase())
-      );
-      const total      = results.length;
-      const totalPages = Math.max(1, Math.ceil(total / limit));
-      const start      = (page - 1) * limit;
-      const items      = results.slice(start, start + limit);
-      return { items, total, page, totalPages };
+    async fetch(params) {
+      // Delega a DataAPI — para Firebase solo cambia DataAPI.getListings()
+      return DataAPI.getListings(params);
     },
   },
 
@@ -3020,11 +3180,14 @@ const Listings = {
   _renderItems() {
     const grid = document.getElementById('cardsGrid');
     if (!this._state.items.length) {
+      const { q, cat } = this._state.query;
+      const hasFilter = q || cat;
       grid.innerHTML = `
         <div class="empty">
           <div style="font-size:2.5rem;margin-bottom:12px">🔍</div>
-          <strong>Sin resultados</strong>
-          Intenta con otra búsqueda o categoría.
+          <strong>No se encontraron artículos</strong>
+          ${hasFilter ? 'Ningún anuncio coincide con tu búsqueda.' : 'Aún no hay artículos publicados.'}
+          ${hasFilter ? `<br><button onclick="filterCards('',document.querySelector('.pill'));document.getElementById('searchInput').value=''" style="margin-top:14px;background:var(--green);color:white;border:none;padding:9px 22px;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer">Limpiar filtros</button>` : ''}
         </div>`;
       return;
     }
@@ -3100,7 +3263,7 @@ function buildCard(item) {
     </div>` : '';
 
   return `
-    <div class="card" data-id="${item.id}" onclick="openDetailModal(${item.id})" role="button" tabindex="0" aria-label="Ver detalle de ${item.title}">
+    <div class="card" data-id="${item.id}" onclick="openDetailModal('${item.id}')" role="button" tabindex="0" aria-label="Ver detalle de ${item.title}">
       <img class="card-img" src="${img}" alt="${item.title}" loading="lazy">
       <div class="card-body">
         <span class="card-badge">${item.cat}</span>
@@ -3126,7 +3289,7 @@ function buildCardContactBtn(item) {
       ${WA_ICON} Contactar por WhatsApp
     </a>`;
   }
-  return `<button class="card-contact gate" onclick="event.stopPropagation();_pendingDetailId=${item.id};openAuthModal('login')">
+  return `<button class="card-contact gate" onclick="event.stopPropagation();_pendingDetailId='${item.id}';openAuthModal('login')">
     Entrar para contactar
   </button>`;
 }
@@ -3204,7 +3367,12 @@ function renderReviews(itemId) {
   // Reviews list
   const listEl = document.getElementById('reviewsList');
   if (!count) {
-    listEl.innerHTML = `<p class="reviews-empty">Sé el primero en dejar una reseña.</p>`;
+    listEl.innerHTML = `
+      <div class="reviews-empty" style="padding:20px 0;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:6px">💬</div>
+        <div style="font-weight:700;color:var(--text-2);font-style:normal;font-size:.9rem;margin-bottom:4px">Sin reseñas todavía</div>
+        <div style="font-size:.8rem;color:var(--muted);font-style:normal">Sé el primero en opinar sobre este artículo.</div>
+      </div>`;
   } else {
     listEl.innerHTML = reviews.map(r => `
       <div class="review-card">
@@ -3242,10 +3410,10 @@ function renderReviewForm(itemId) {
     <div class="review-form" id="reviewForm">
       <span class="review-form-label">Tu reseña</span>
       <div class="star-picker" id="starPicker">
-        ${[1,2,3,4,5].map(v => `<button type="button" data-val="${v}" onclick="setReviewStar(${v})" onmouseover="hoverStar(${v})" onmouseout="unhoverStar()">★</button>`).join('')}
+        ${[1,2,3,4,5].map(v => `<button type="button" data-val="${v}" aria-label="${v} estrella${v>1?'s':''}" onclick="setReviewStar(${v})" onmouseover="hoverStar(${v})" onmouseout="unhoverStar()">★</button>`).join('')}
       </div>
       <textarea class="review-textarea" id="reviewText" placeholder="¿Cómo fue tu experiencia?" maxlength="300" rows="3"></textarea>
-      <button class="btn-submit-review" id="btnSubmitReview" onclick="submitReview(${itemId})">Publicar reseña</button>
+      <button class="btn-submit-review" id="btnSubmitReview" onclick="submitReview('${itemId}')">Publicar reseña</button>
     </div>`;
 }
 
@@ -3283,11 +3451,24 @@ function submitReview(itemId) {
   document.getElementById('reviewsList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-/* ── WA area: renders either the real button or the gate ── */
+/* ── WA area: renders either the real button, edit button (owner), or the gate ── */
 function renderWaArea(item) {
   const area  = document.getElementById('detailWaArea');
+
+  // Own listing → show edit shortcut instead of contact
+  if (item._isOwn) {
+    area.innerHTML = `
+      <button class="detail-wa-btn" style="background:var(--green-dark)"
+        onclick="closeDetailModal(); editMyListing('${item.id}')"
+        aria-label="Editar este anuncio">
+        ✏️ Editar mi anuncio
+      </button>`;
+    return;
+  }
+
+  const phone = item.phone || '';
   const msg   = encodeURIComponent(`Hola, vi tu anuncio en Rentalos sobre "${item.title}". ¿Está disponible para rentar?`);
-  const waUrl = `https://wa.me/${item.phone}?text=${msg}`;
+  const waUrl = `https://wa.me/${phone.replace(/\D/g,'')}?text=${msg}`;
 
   if (Auth.isLoggedIn()) {
     area.innerHTML = `
@@ -3298,7 +3479,7 @@ function renderWaArea(item) {
     area.innerHTML = `
       <div class="detail-wa-gate">
         <p>Inicia sesión para ver el contacto del rentador y enviarle un mensaje.</p>
-        <button class="gate-btn" onclick="closeDetailModal();_pendingDetailId=${item.id};openAuthModal('login')">
+        <button class="gate-btn" onclick="closeDetailModal();_pendingDetailId='${item.id}';openAuthModal('login')">
           Entrar para contactar
         </button>
       </div>`;
@@ -3309,17 +3490,64 @@ function renderWaArea(item) {
 const detailOverlay = document.getElementById('detailOverlay');
 let _pendingDetailId = null;
 
+/* ── Detail carousel state ── */
+let _detCarIdx = 0;
+let _detCarImgs = [];
+
+function _renderDetailCarousel(images, title) {
+  _detCarImgs = images;
+  _detCarIdx  = 0;
+  const track = document.getElementById('detailCarTrack');
+  const dots  = document.getElementById('detailCarDots');
+  const car   = document.getElementById('detailCarousel');
+  car.dataset.count = images.length;
+  track.innerHTML = images.map(src =>
+    `<div class="detail-carousel-slide"><img src="${src}" alt="${title}" loading="lazy"></div>`
+  ).join('');
+  dots.innerHTML = images.map((_,i) =>
+    `<div class="detail-car-dot${i===0?' active':''}"></div>`
+  ).join('');
+  _detCarGoto(0, false);
+}
+function _detCarGoto(idx, animate = true) {
+  const n = _detCarImgs.length;
+  if (!n) return;
+  _detCarIdx = ((idx % n) + n) % n;
+  const track = document.getElementById('detailCarTrack');
+  if (!animate) track.style.transition = 'none';
+  track.style.transform = `translateX(-${_detCarIdx * 100}%)`;
+  if (!animate) requestAnimationFrame(() => { track.style.transition = ''; });
+  document.querySelectorAll('#detailCarDots .detail-car-dot').forEach((d,i) =>
+    d.classList.toggle('active', i === _detCarIdx));
+}
+document.getElementById('detailCarPrev').addEventListener('click', () => _detCarGoto(_detCarIdx - 1));
+document.getElementById('detailCarNext').addEventListener('click', () => _detCarGoto(_detCarIdx + 1));
+
+/* touch swipe on carousel */
+(function(){
+  let sx = 0;
+  const car = document.getElementById('detailCarousel');
+  car.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  car.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 40) _detCarGoto(_detCarIdx + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+})();
+
 function openDetailModal(id) {
-  const item = (Listings._state.items.find(i => i.id === id)) || MOCK_LISTINGS.find(i => i.id === id);
+  const item = (Listings._state.items.find(i => i.id == id)) || MOCK_LISTINGS.find(i => i.id == id);
   if (!item) return;
   _currentDetailId = id;
 
-  const img   = Array.isArray(item.images) ? item.images[0] : item.img;
+  const images = Array.isArray(item.images) && item.images.length
+    ? item.images
+    : [item.img || 'https://placehold.co/400x220?text=Sin+imagen'];
+
   const price = typeof item.price === 'number'
     ? `$${item.price.toLocaleString('es-MX')}` : item.price;
 
-  document.getElementById('detailImg').src = img;
-  document.getElementById('detailImg').alt = item.title;
+  _renderDetailCarousel(images, item.title);
+
   document.getElementById('detailBadge').textContent = item.cat;
   document.getElementById('detailLoc').textContent = '📍 ' + item.loc;
   document.getElementById('detailTitle').textContent = item.title;
@@ -3355,7 +3583,7 @@ document.addEventListener('keydown', e => {
 document.getElementById('cardsGrid').addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) {
     e.preventDefault();
-    const id = parseInt(e.target.dataset.id, 10);
+    const id = e.target.dataset.id;
     if (id) openDetailModal(id);
   }
 });
@@ -3373,7 +3601,7 @@ function _onDetailAuthReturn() {
     _pendingDetailId = null;
     setTimeout(() => openDetailModal(id), 320);
   } else if (_currentDetailId && detailOverlay.classList.contains('open')) {
-    const item = (Listings._state.items.find(i => i.id === _currentDetailId)) || MOCK_LISTINGS.find(i => i.id === _currentDetailId);
+    const item = (Listings._state.items.find(i => i.id == _currentDetailId)) || MOCK_LISTINGS.find(i => i.id == _currentDetailId);
     if (item) { renderWaArea(item); renderReviewForm(_currentDetailId); }
   }
 }
@@ -3444,7 +3672,7 @@ function cardContent(item) {
       ${WA_ICON_SM} Rentar
     </a>`;
   } else {
-    waBtn = `<button class="hc-wa gate" onclick="event.stopPropagation();_pendingDetailId=${item.id};openAuthModal('login')">
+    waBtn = `<button class="hc-wa gate" onclick="event.stopPropagation();_pendingDetailId='${item.id}';openAuthModal('login')">
       Entrar
     </button>`;
   }
@@ -3680,6 +3908,7 @@ requestAnimationFrame(() => {
 let currentStep = 1;
 const TOTAL_STEPS = 4;
 let photoFiles = [];
+let _editId = null; // null = nuevo, number = editar artículo existente
 
 const overlay   = document.getElementById('publishModal');
 const btnBack   = document.getElementById('btnBack');
@@ -3689,10 +3918,43 @@ const successEl = document.getElementById('modalSuccess');
 const bodyEl    = document.getElementById('modalBody');
 
 function openModal() {
+  _editId = null;
   resetModal();
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   setTimeout(() => document.getElementById('f-title')?.focus(), 300);
+}
+
+function openModalEdit(item) {
+  _editId = item.id;
+  resetModal();
+  // Precargar campos
+  document.getElementById('f-title').value = item.title || '';
+  document.getElementById('f-desc').value  = item.desc  || '';
+  document.getElementById('f-cat').value   = item.cat   || '';
+  document.getElementById('f-price').value = item.price || '';
+  document.getElementById('f-unit').value  = item.unit  || 'día';
+  document.getElementById('f-loc').value   = item.loc   || '';
+  document.getElementById('f-name').value  = item.name  || '';
+  document.getElementById('f-phone').value = item.phone || '';
+  document.getElementById('desc-counter').textContent =
+    `${(item.desc || '').length} / 400 caracteres`;
+  // Fotos existentes: mostrar como previews no-removibles (ya están guardadas)
+  if (Array.isArray(item.images) && item.images.length) {
+    const prev = document.getElementById('photoPreviews');
+    item.images.forEach((src, i) => {
+      const div = document.createElement('div');
+      div.className = 'photo-thumb';
+      div.dataset.idx = i;
+      div.innerHTML = `<img src="${src}" alt="foto existente">
+        <button class="photo-thumb-remove" onclick="removePhoto(${i})" type="button">✕</button>`;
+      prev.appendChild(div);
+      // Simular File-like para que la validación del paso 2 no falle
+      photoFiles.push({ _existing: src });
+    });
+  }
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
@@ -3750,7 +4012,7 @@ function goToStep(n) {
   btnBack.style.display = n > 1 ? '' : 'none';
   // Next button label
   if (n === TOTAL_STEPS) {
-    btnNext.textContent = '✓ Publicar anuncio';
+    btnNext.textContent = _editId ? '✓ Actualizar anuncio' : '✓ Publicar anuncio';
   } else {
     btnNext.innerHTML = 'Siguiente →';
   }
@@ -3921,16 +4183,57 @@ function buildPreview() {
 //     finally { btnNext.disabled = false; }
 //   }
 //
-function submitModal() {
+// Comprime un File/Blob a base64 usando canvas (máx 800px, calidad 0.75)
+function compressPhoto(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitModal() {
   btnNext.disabled = true;
-  btnNext.textContent = 'Publicando…';
-  // Simulación — reemplazar por el bloque de arriba cuando haya backend
-  setTimeout(() => {
-    bodyEl.style.display = 'none';
-    footer.style.display = 'none';
-    successEl.classList.add('active');
-    btnNext.disabled = false;
-  }, 1200);
+  btnNext.textContent = _editId ? 'Actualizando…' : 'Publicando…';
+  // Separar fotos nuevas (File) de las existentes (objetos _existing)
+  const newFiles = photoFiles.filter(f => !f._existing);
+  const existingUrls = photoFiles.filter(f => f._existing).map(f => f._existing);
+  // TODO: Firebase Storage — reemplazar compressPhoto por subida a Storage
+  const newUrls = await Promise.all(newFiles.map(compressPhoto));
+  const images = [...existingUrls, ...newUrls];
+
+  const data = {
+    title: document.getElementById('f-title').value.trim(),
+    cat:   document.getElementById('f-cat').value,
+    desc:  document.getElementById('f-desc').value.trim(),
+    price: Number(document.getElementById('f-price').value),
+    unit:  document.getElementById('f-unit').value || 'día',
+    loc:   document.getElementById('f-loc').value.trim(),
+    phone: document.getElementById('f-phone').value.replace(/\D/g,''),
+    images,
+  };
+
+  if (_editId) {
+    await DataAPI.updateListing(_editId, data);
+  } else {
+    await DataAPI.createListing(data);
+  }
+  bodyEl.style.display = 'none';
+  footer.style.display = 'none';
+  successEl.classList.add('active');
+  btnNext.disabled = false;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3967,6 +4270,288 @@ function submitModal() {
 
 const API_BASE = '/api'; // ← cambia esto a tu URL de backend
 
+/* ══════════════════════════════════════════════════════════════
+   DataAPI — capa de abstracción de datos
+   Para conectar Firebase: reemplaza el interior de cada método.
+   La UI nunca toca localStorage ni MOCK_LISTINGS directamente.
+══════════════════════════════════════════════════════════════ */
+/* ── Photo upload helpers ── */
+function _dataURLtoBlob(dataURL) {
+  const [header, data] = dataURL.split(',');
+  const mime = header.match(/:(.*?);/)[1];
+  const binary = atob(data);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+async function _uploadPhoto(src, listingId, idx) {
+  if (typeof src === 'string' && src.startsWith('http')) return src;
+  const blob = src.startsWith('data:') ? _dataURLtoBlob(src) : src;
+  const ref  = _storage.ref(`listings/${listingId}/photo_${idx}_${Date.now()}`);
+  const snap = await ref.put(blob, { contentType: 'image/jpeg' });
+  return snap.ref.getDownloadURL();
+}
+
+const DataAPI = {
+  async getListings({ q = '', cat = '', page = 1, limit = PAGE_SIZE } = {}) {
+    const uid = _auth.currentUser?.uid;
+    let fsItems = [];
+    try {
+      const snap = await _db.collection('listings').orderBy('createdAt', 'desc').get();
+      fsItems = snap.docs.map(d => ({ id: d.id, ...d.data(), _isOwn: d.data().ownerId === uid }));
+    } catch (e) { console.warn('Firestore getListings:', e.message); }
+    let results = [...fsItems, ...MOCK_LISTINGS];
+    if (cat) results = results.filter(l => l.cat === cat);
+    if (q)   results = results.filter(l =>
+      l.title.toLowerCase().includes(q.toLowerCase()) ||
+      l.desc.toLowerCase().includes(q.toLowerCase())
+    );
+    const total      = results.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return { items: results.slice((page - 1) * limit, page * limit), total, page, totalPages };
+  },
+
+  async getListingById(id) {
+    const uid = _auth.currentUser?.uid;
+    try {
+      const doc = await _db.collection('listings').doc(String(id)).get();
+      if (doc.exists) return { id: doc.id, ...doc.data(), _isOwn: doc.data().ownerId === uid };
+    } catch {}
+    return MOCK_LISTINGS.find(i => i.id == id) || null;
+  },
+
+  async getMyListings() {
+    const uid = _auth.currentUser?.uid;
+    if (!uid) return [];
+    try {
+      const snap = await _db.collection('listings').where('ownerId', '==', uid).get();
+      return snap.docs.map(d => ({ id: d.id, ...d.data(), _isOwn: true }));
+    } catch (e) { console.warn('Firestore getMyListings:', e.message); return []; }
+  },
+
+  async createListing(data) {
+    const uid = _auth.currentUser?.uid;
+    const { images: photoData, ...rest } = data;
+    const docRef = await _db.collection('listings').add({
+      ...rest, ownerId: uid, images: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    const imageUrls = await Promise.all(photoData.map((src, i) => _uploadPhoto(src, docRef.id, i)));
+    await docRef.update({ images: imageUrls });
+    return { id: docRef.id, ...rest, images: imageUrls, ownerId: uid, _isOwn: true };
+  },
+
+  async updateListing(id, data) {
+    const { images: photoData, ...rest } = data;
+    const imageUrls = await Promise.all(photoData.map((src, i) => _uploadPhoto(src, String(id), i)));
+    await _db.collection('listings').doc(String(id)).update({ ...rest, images: imageUrls });
+  },
+
+  async deleteListing(id) {
+    try {
+      const doc = await _db.collection('listings').doc(String(id)).get();
+      if (doc.exists) {
+        const urls = doc.data().images || [];
+        await Promise.allSettled(urls.map(url => firebase.storage().refFromURL(url).delete()));
+      }
+    } catch {}
+    await _db.collection('listings').doc(String(id)).delete();
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   AuthAPI — capa de abstracción de autenticación
+   Para conectar Firebase Auth: reemplaza el interior de cada método.
+══════════════════════════════════════════════════════════════ */
+const AuthAPI = {
+  async login(email, pass) {
+    const cred = await _auth.signInWithEmailAndPassword(email, pass);
+    const token = await cred.user.getIdToken();
+    const snap  = await _db.collection('users').doc(cred.user.uid).get();
+    const profile = snap.exists ? snap.data() : { name: email, email, phone: '' };
+    return { token, user: { id: cred.user.uid, ...profile } };
+  },
+
+  async register(name, email, pass, phone) {
+    const cred = await _auth.createUserWithEmailAndPassword(email, pass);
+    const profile = { name, email, phone, avatar: null };
+    await _db.collection('users').doc(cred.user.uid).set(profile);
+    const token = await cred.user.getIdToken();
+    return { token, user: { id: cred.user.uid, ...profile } };
+  },
+
+  async logout() {
+    Auth.logout();
+    await _auth.signOut().catch(() => {});
+  },
+
+  currentUser() { return Auth.user(); },
+  isLoggedIn()  { return Auth.isLoggedIn(); },
+
+  async updateProfile(data) {
+    const u = Auth.user();
+    if (!u) return;
+    const updated = { ...u, ...data };
+    await _db.collection('users').doc(u.id).set(
+      { name: data.name, email: data.email, phone: data.phone, avatar: u.avatar || null },
+      { merge: true }
+    );
+    Auth._session = { ...Auth._session, user: updated };
+    Auth._renderNav();
+  },
+};
+
+
+const MyListings = {
+  _key: 'rnt_my_listings',
+
+  getAll() {
+    try { return JSON.parse(localStorage.getItem(this._key) || '[]'); }
+    catch { return []; }
+  },
+
+  save(item) {
+    const arr = this.getAll();
+    arr.unshift(item);
+    localStorage.setItem(this._key, JSON.stringify(arr));
+  },
+
+  remove(id) {
+    const arr = this.getAll().filter(i => i.id !== id);
+    localStorage.setItem(this._key, JSON.stringify(arr));
+  },
+
+  update(id, data) {
+    const arr = this.getAll().map(i => i.id === id ? { ...i, ...data } : i);
+    localStorage.setItem(this._key, JSON.stringify(arr));
+  },
+};
+
+function openMyListings() {
+  document.getElementById('navDropdown')?.classList.remove('open');
+  renderMyListings();
+  const modal = document.getElementById('myListingsModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMyListings() {
+  document.getElementById('myListingsModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function renderMyListings() {
+  const items = await DataAPI.getMyListings();
+  const el = document.getElementById('myListingsContent');
+  if (!items.length) {
+    el.innerHTML = `
+      <div class="my-listings-empty">
+        <div class="empty-icon">📦</div>
+        <p>Aún no tienes anuncios publicados.</p>
+        <button class="btn-nav" onclick="closeMyListings(); openModal()">+ Publicar mi primer artículo</button>
+      </div>`;
+    return;
+  }
+  el.innerHTML = items.map(item => {
+    const imgHTML = Array.isArray(item.images) && item.images.length
+      ? `<img src="${item.images[0]}" alt="${item.title}">`
+      : '📦';
+    const price = typeof item.price === 'number'
+      ? `$${item.price.toLocaleString('es-MX')} / ${item.unit}`
+      : '';
+    return `
+      <div class="my-listing-card">
+        <div class="my-listing-thumb">${imgHTML}</div>
+        <div class="my-listing-info">
+          <div class="my-listing-title">${item.title}</div>
+          <div class="my-listing-meta">${item.cat}${price ? ' · ' + price : ''}${item.loc ? ' · 📍 ' + item.loc : ''}</div>
+        </div>
+        <div class="my-listing-actions">
+          <button class="my-listing-edit" onclick="editMyListing('${item.id}')" aria-label="Editar anuncio">Editar</button>
+          <button class="my-listing-del" onclick="deleteMyListing('${item.id}')" aria-label="Eliminar anuncio">Eliminar</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function deleteMyListing(id) {
+  if (!confirm('¿Eliminar este anuncio?')) return;
+  await DataAPI.deleteListing(id);
+  renderMyListings();
+}
+
+async function editMyListing(id) {
+  const item = (await DataAPI.getMyListings()).find(i => i.id === id);
+  if (!item) return;
+  closeMyListings();
+  openModalEdit(item);
+}
+
+// Cerrar con Escape o click fuera
+document.getElementById('myListingsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('myListingsModal')) closeMyListings();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('myListingsModal').classList.contains('open'))
+    closeMyListings();
+});
+
+/* ── Mi perfil ── */
+function openProfile() {
+  document.getElementById('navDropdown')?.classList.remove('open');
+  const u = AuthAPI.currentUser();
+  if (u) {
+    document.getElementById('p-name').value  = u.name  || '';
+    document.getElementById('p-email').value = u.email || '';
+    document.getElementById('p-phone').value = u.phone || '';
+  }
+  document.getElementById('profileSavedMsg').textContent = '';
+  _openSimpleModal('profileModal');
+}
+
+function closeProfile() { _closeSimpleModal('profileModal'); }
+
+async function saveProfile() {
+  const name  = document.getElementById('p-name').value.trim();
+  const email = document.getElementById('p-email').value.trim();
+  const phone = document.getElementById('p-phone').value.replace(/\D/g,'');
+  if (!name) { document.getElementById('p-name').focus(); return; }
+  const btn = document.querySelector('.btn-profile-save');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  await AuthAPI.updateProfile({ name, email, phone });
+  setTimeout(() => {
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+    document.getElementById('profileSavedMsg').textContent = '✓ Cambios guardados';
+    setTimeout(() => { document.getElementById('profileSavedMsg').textContent = ''; }, 2500);
+  }, 320);
+}
+
+/* ── Modales legales ── */
+function openLegal(id) { _openSimpleModal(id); }
+function closeLegal(id) { _closeSimpleModal(id); }
+
+/* ── Helpers comunes ── */
+function _openSimpleModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function _closeSimpleModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+['profileModal','termsModal','privacyModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === document.getElementById(id)) _closeSimpleModal(id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  ['profileModal','termsModal','privacyModal'].forEach(id => {
+    if (document.getElementById(id).classList.contains('open')) _closeSimpleModal(id);
+  });
+});
+
 const Auth = {
 
   /* ── Estado de sesión en memoria ── */
@@ -3974,14 +4559,23 @@ const Auth = {
 
   /* ── Leer sesión guardada al cargar la página ── */
   init() {
-    try {
-      const raw = localStorage.getItem('rnt_token');
-      const usr = localStorage.getItem('rnt_user');
-      if (raw && usr) {
-        this._session = { token: raw, user: JSON.parse(usr) };
-      }
-    } catch { this._session = null; }
-    this._renderNav();
+    return new Promise(resolve => {
+      let firstRun = true;
+      _auth.onAuthStateChanged(async fbUser => {
+        if (fbUser) {
+          try {
+            const token = await fbUser.getIdToken();
+            const snap  = await _db.collection('users').doc(fbUser.uid).get();
+            const profile = snap.exists ? snap.data() : { name: fbUser.email, email: fbUser.email, phone: '' };
+            this._session = { token, user: { id: fbUser.uid, ...profile } };
+          } catch { this._session = null; }
+        } else {
+          this._session = null;
+        }
+        this._renderNav();
+        if (firstRun) { firstRun = false; resolve(); }
+      });
+    });
   },
 
   /* ── ¿Hay sesión activa? ── */
@@ -4006,6 +4600,7 @@ const Auth = {
     this._session = null;
     localStorage.removeItem('rnt_token');
     localStorage.removeItem('rnt_user');
+    _auth.signOut().catch(() => {});
     this._renderNav();
   },
 
@@ -4031,10 +4626,10 @@ const Auth = {
               <div class="nav-dropdown-email">${u.email}</div>
             </div>
             <div class="nav-dropdown-divider"></div>
-            <button class="nav-dropdown-item" onclick="Auth._toggleUserMenu(); alert('Próximamente: Mis anuncios')">
+            <button class="nav-dropdown-item" onclick="Auth._toggleUserMenu(); openMyListings()">
               📦 Mis anuncios
             </button>
-            <button class="nav-dropdown-item" onclick="Auth._toggleUserMenu(); alert('Próximamente: Mi perfil')">
+            <button class="nav-dropdown-item" onclick="Auth._toggleUserMenu(); openProfile()">
               👤 Mi perfil
             </button>
             <div class="nav-dropdown-divider"></div>
@@ -4051,6 +4646,8 @@ const Auth = {
           <div style="padding:10px;background:var(--green-light);border-radius:10px;font-size:.85rem;color:var(--green-deep);font-weight:600;text-align:center">
             Hola, ${u.name.split(' ')[0]} 👋
           </div>
+          <button class="btn-nav" onclick="closeMobileMenu(); openMyListings()">📦 Mis anuncios</button>
+          <button class="btn-nav" onclick="closeMobileMenu(); openProfile()">👤 Mi perfil</button>
           <button class="btn-nav" onclick="openModal(); closeMobileMenu()">+ Publicar mi artículo</button>
           <button class="btn-nav-auth" onclick="Auth._confirmLogout(); closeMobileMenu()">Cerrar sesión</button>
         `;
@@ -4060,9 +4657,7 @@ const Auth = {
       if (bottomBtn) {
         const initial = u.name ? u.name.trim()[0].toUpperCase() : '✓';
         bottomBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--green-dark)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span style="color:var(--green-dark)">Mi cuenta</span>`;
-        bottomBtn.onclick = () => {
-          document.getElementById('navDropdown')?.classList.toggle('open');
-        };
+        bottomBtn.onclick = () => openMyListings();
       }
     } else {
       navActions.innerHTML = `
@@ -4092,8 +4687,7 @@ const Auth = {
   _confirmLogout() {
     document.getElementById('navDropdown')?.classList.remove('open');
     this.logout();
-    // Refresh cards and carousel to show gate buttons
-    Listings._renderItems();
+    Listings.init();
     fillSlots();
   },
 
@@ -4106,80 +4700,44 @@ const Auth = {
   api: {
 
     async login({ email, password }) {
-      /* ── PRODUCCIÓN: descomentar y borrar la simulación ──
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Credenciales incorrectas');
-      }
-      return res.json(); // { token, user }
-      */
-
-      // ── SIMULACIÓN (borrar cuando tengas backend) ──
-      await delay(900);
-      if (password.length < 1) throw new Error('Contraseña incorrecta');
-      return {
-        token: 'mock_jwt_' + Date.now(),
-        user: { id: 'u1', name: 'Usuario Demo', email, phone: '5512345678', avatar: null },
-      };
+      const cred  = await _auth.signInWithEmailAndPassword(email, password);
+      const token = await cred.user.getIdToken();
+      const snap  = await _db.collection('users').doc(cred.user.uid).get();
+      const profile = snap.exists ? snap.data() : { name: email, email, phone: '' };
+      return { token, user: { id: cred.user.uid, ...profile } };
     },
 
     async register({ name, email, phone, password }) {
-      /* ── PRODUCCIÓN ──
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'No se pudo crear la cuenta');
-      }
-      return res.json(); // { token, user }
-      */
-
-      // ── SIMULACIÓN ──
-      await delay(1000);
-      return {
-        token: 'mock_jwt_' + Date.now(),
-        user: { id: 'u2', name, email, phone, avatar: null },
-      };
+      const cred = await _auth.createUserWithEmailAndPassword(email, password);
+      const profile = { name, email, phone, avatar: null };
+      await _db.collection('users').doc(cred.user.uid).set(profile);
+      const token = await cred.user.getIdToken();
+      return { token, user: { id: cred.user.uid, ...profile } };
     },
 
     async forgotPassword({ email }) {
-      /* ── PRODUCCIÓN ──
-      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (!res.ok) throw new Error('No se pudo enviar el correo');
-      return res.json();
-      */
-
-      // ── SIMULACIÓN ──
-      await delay(800);
+      await _auth.sendPasswordResetEmail(email.trim());
       return { ok: true };
     },
 
     async loginWithProvider(provider) {
-      /* ── PRODUCCIÓN ──
-         Redirige a tu OAuth endpoint:
-         window.location.href = `${API_BASE}/auth/${provider}`;
-         El backend redirige de vuelta con ?token=... y capturas el token en la URL.
-      */
-
-      // ── SIMULACIÓN ──
-      await delay(700);
-      const names = { google: 'Usuario Google', facebook: 'Usuario Facebook' };
-      return {
-        token: 'mock_jwt_social_' + Date.now(),
-        user: { id: 'u3', name: names[provider], email: `${provider}@demo.com`, phone: '', avatar: null },
+      const providers = {
+        google:   new firebase.auth.GoogleAuthProvider(),
+        facebook: new firebase.auth.FacebookAuthProvider(),
       };
+      const p = providers[provider];
+      if (!p) throw new Error('Proveedor no soportado');
+      const cred  = await _auth.signInWithPopup(p);
+      const token = await cred.user.getIdToken();
+      const snap  = await _db.collection('users').doc(cred.user.uid).get();
+      if (!snap.exists) {
+        await _db.collection('users').doc(cred.user.uid).set({
+          name: cred.user.displayName || cred.user.email,
+          email: cred.user.email, phone: '', avatar: cred.user.photoURL || null,
+        });
+      }
+      const profile = (await _db.collection('users').doc(cred.user.uid).get()).data();
+      return { token, user: { id: cred.user.uid, ...profile } };
     },
   },
 };
@@ -4327,8 +4885,10 @@ function clearAuthError() {
 function _onAuthSuccess(data, successTitle, successMsg) {
   Auth._saveSession(data.token, data.user);
   showAuthSuccessUI(successTitle, successMsg);
-  // Refresh detail modal if open or pending
-  setTimeout(_onDetailAuthReturn, 340);
+  setTimeout(async () => {
+    await Listings.init(); // reload so _isOwn flags are correct
+    _onDetailAuthReturn();
+  }, 340);
 }
 
 /* ── Login ── */
@@ -4444,13 +5004,12 @@ window.closeAuthModal = function() {
     _pendingAction = null;
   }
 };
-/* ── Inicializar sesión al cargar ── */
-Auth.init();
-
-/* ── Inicializar listings y carrusel después de Auth ── */
-Listings.init();
-fillSlots();
-startAutoplay();
+/* ── Inicializar sesión al cargar — await Firebase auth state ── */
+Auth.init().then(() => {
+  Listings.init();
+  fillSlots();
+  startAutoplay();
+});
 
 /* ══════════════════════════════════════════
    MOBILE MENU
