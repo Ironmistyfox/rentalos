@@ -1879,8 +1879,8 @@
     .my-listings-empty p { color:var(--muted); font-size:.9rem; margin-bottom:20px; }
 
     /* ── Mi perfil + modales legales ── */
-    #profileModal, #termsModal, #privacyModal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.45); overflow-y:auto; padding:24px 16px 40px; }
-    #profileModal.open, #termsModal.open, #privacyModal.open { display:block; }
+    #profileModal, #termsModal, #privacyModal, #verifyEmailModal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.45); overflow-y:auto; padding:24px 16px 40px; }
+    #profileModal.open, #termsModal.open, #privacyModal.open, #verifyEmailModal.open { display:block; }
     .simple-modal-box { background:var(--white); border-radius:20px; max-width:520px; margin:0 auto; padding:28px 24px; }
     .simple-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
     .simple-modal-header h2 { font-size:1.15rem; font-weight:700; }
@@ -2493,6 +2493,24 @@
   </div>
 </div>
 
+<!-- ── Verificación de correo requerida ── -->
+<div id="verifyEmailModal" role="dialog" aria-modal="true" aria-label="Verifica tu correo">
+  <div class="simple-modal-box">
+    <div class="simple-modal-header">
+      <h2>📬 Verifica tu correo</h2>
+      <button class="simple-modal-close" onclick="closeVerifyEmailModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <p style="color:var(--muted);font-size:.92rem;line-height:1.6;margin:0 0 16px">
+      Para publicar artículos primero debes confirmar tu correo
+      <strong id="verifyEmailAddr"></strong>. Revisa tu bandeja de entrada
+      (y spam) y haz clic en el link de verificación.
+    </p>
+    <button class="btn-profile-save" onclick="resendVerificationEmail()" id="btnResendVerify">Reenviar correo de verificación</button>
+    <button class="btn-nav-auth" style="margin-top:10px;width:100%" onclick="checkVerifiedAndContinue()">Ya verifiqué, continuar</button>
+    <div class="profile-saved-msg" id="verifyEmailMsg"></div>
+  </div>
+</div>
+
 <!-- ── Términos de uso modal ── -->
 <div id="termsModal" role="dialog" aria-modal="true" aria-label="Términos de uso">
   <div class="simple-modal-box">
@@ -3014,7 +3032,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ══ Firebase init ══════════════════════════════════════════ */
 const _fb = firebase.initializeApp({
@@ -3025,60 +3042,18 @@ const _fb = firebase.initializeApp({
   messagingSenderId: "95425593259",
   appId:             "1:95425593259:web:45270f6470986fbe34dcee",
 });
-const _db      = firebase.firestore();
-const _auth    = firebase.auth();
-const _storage = firebase.storage();
+const _db   = firebase.firestore();
+const _auth = firebase.auth();
+
+/* ══ Cloudinary (subida de imágenes, unsigned) ══════════════ */
+const CLOUDINARY_CLOUD_NAME    = 'dnb5sbgs1';
+const CLOUDINARY_UPLOAD_PRESET = 'Rentalos_Uploads';
 /* ─────────────────────────────────────────────────────────── */
 </script>
 <script>
 /* ══════════════════════════════════════════════════════════════
-   LISTINGS LAYER  — Capa de artículos
-   ─────────────────────────────────────────────────────────────
-   ESTADO ACTUAL: datos mock en MOCK_LISTINGS (abajo).
-
-   ╔══ CÓMO CONECTAR AL BACKEND ══════════════════════════════╗
-   â•'                                                           â•'
-   ║  1. Cambia API_BASE (línea ~3342) a tu URL real.          ║
-   â•'                                                           â•'
-   â•'  2. En Listings.api.fetch(), descomenta el bloque         â•'
-   ║     "PRODUCCIÓN" y borra el bloque "SIMULACIÓN".          ║
-   â•'                                                           â•'
-   â•'  3. El backend debe exponer:                              â•'
-   â•'     GET /api/listings?q=&cat=&page=&limit=                â•'
-   ║     → { items: [...], total, page, totalPages }           ║
-   â•'     Cada item: {                                          â•'
-   â•'       id, title, cat, desc,                               â•'
-   â•'       price (number), unit, loc,                          â•'
-   ║       phone (string con código país, ej: "521234567890"), ║
-   â•'       images: [url1, url2, ...],                          â•'
-   ║       rating?: number,   ← promedio, 0-5                  ║
-   â•'       reviewCount?: number                                 â•'
-   â•'     }                                                     â•'
-   â•'                                                           â•'
-   â•'  4. Borra MOCK_LISTINGS una vez que el API funcione.      â•'
-   â•'                                                           â•'
-   â•'  5. Para publicar: POST /api/listings (multipart/form-data)â•'
-   â•'     campos: title, cat, desc, price, unit, loc, phone,   â•'
-   â•'             photos[] (archivos)                           â•'
-   ║     → { item: {...} }  (el artículo recién creado)        ║
-   ╚═══════════════════════════════════════════════════════════╝
+   LISTINGS LAYER — Capa de artículos (Firestore)
 ══════════════════════════════════════════════════════════════ */
-
-/* ── Datos locales (borrar cuando haya backend) ── */
-const MOCK_LISTINGS = [
-  { id:1,  title:"Bicicleta de montaña Trek",    cat:"Deportes",     desc:"Rodada 29, suspensión delantera, excelente estado. Incluye casco y candado.",              price:150,  unit:"día",    loc:"Morelia",   phone:"5213001234567", images:["https://picsum.photos/seed/mountainbike22/400/240"] },
-  { id:2,  title:"Cámara Canon EOS Rebel T8i",   cat:"Electrónica",  desc:"24.1 MP, video 4K, lente 18-55mm y memoria SD incluida. Ideal para eventos y viajes.",    price:400,  unit:"día",    loc:"Morelia",   phone:"5213001234568", images:["https://picsum.photos/seed/dslrcamera88/400/240"] },
-  { id:3,  title:"Taladro percutor Bosch",        cat:"Herramientas", desc:"650W, percusión, viene con juego de brocas completo. Perfecto para remodelaciones.",      price:80,   unit:"día",    loc:"Morelia",   phone:"5213001234569", images:["https://picsum.photos/seed/powerdrill44/400/240"] },
-  { id:4,  title:"Proyector Full HD Epson",       cat:"Electrónica",  desc:"3300 lúmenes, HDMI, WiFi. Ideal para presentaciones o cine en casa.",                    price:350,  unit:"día",    loc:"Morelia",   phone:"5213001234570", images:["https://picsum.photos/seed/projector55/400/240"] },
-  { id:5,  title:"Kayak individual",              cat:"Deportes",     desc:"Plástico de alta resistencia, incluye remo y chaleco salvavidas.",                        price:250,  unit:"día",    loc:"Pátzcuaro", phone:"5213001234571", images:["https://picsum.photos/seed/kayak77/400/240"] },
-  { id:6,  title:"Inflable saltarín 5×5m",        cat:"Fiestas",      desc:"Dinosaurio con capacidad para 8 niños. Incluye soplador eléctrico.",                     price:800,  unit:"evento", loc:"Morelia",   phone:"5213001234572", images:["https://picsum.photos/seed/bouncehouse11/400/240"] },
-  { id:7,  title:"Fotografía para eventos",       cat:"Servicios",    desc:"Paquete 4 horas, edición incluida y 200 fotos entregadas en 48h.",                       price:1800, unit:"evento", loc:"Morelia",   phone:"5213001234573", images:["https://picsum.photos/seed/eventphoto99/400/240"] },
-  { id:8,  title:"Scooter eléctrico Xiaomi",      cat:"Vehículos",    desc:"Autonomía 30km, velocidad máx 25km/h, cargador incluido.",                               price:200,  unit:"día",    loc:"Morelia",   phone:"5213001234574", images:["https://picsum.photos/seed/escooter66/400/240"] },
-  { id:9,  title:"Tienda de campaña 4 personas",  cat:"Deportes",     desc:"Impermeable, doble capa, armado rápido. Ideal para acampar en Michoacán.",               price:180,  unit:"día",    loc:"Morelia",   phone:"5213001234575", images:["https://picsum.photos/seed/campingtent33/400/240"] },
-  { id:10, title:"Bocinas JBL para eventos",      cat:"Fiestas",      desc:"Par de bocinas 15\", 2000W totales. Bluetooth y mixer incluido.",                        price:700,  unit:"evento", loc:"Morelia",   phone:"5213001234576", images:["https://picsum.photos/seed/partyspeaker55/400/240"] },
-  { id:11, title:"Vestido de quinceañera",        cat:"Ropa",         desc:"Talla M, color champagne con detalles dorados. Estado impecable.",                       price:600,  unit:"evento", loc:"Morelia",   phone:"5213001234577", images:["https://picsum.photos/seed/quinceadress22/400/240"] },
-  { id:12, title:"Sierra circular Makita",        cat:"Herramientas", desc:"7-1/4\", disco incluido y guía paralela. Perfecta para remodelación.",                   price:120,  unit:"día",    loc:"Morelia",   phone:"5213001234578", images:["https://picsum.photos/seed/circularsaw88/400/240"] },
-];
 
 const PAGE_SIZE = 8; // artículos por página
 
@@ -3142,14 +3117,7 @@ const Listings = {
     await this.load({ q, cat, page: 1 });
   },
 
-  /* ══ API CALL ══════════════════════════════════════════════
-     ÚNICO MÉTODO QUE CAMBIA AL CONECTAR BACKEND.
-     Descomenta el bloque "PRODUCCIÓN" y borra "SIMULACIÓN".
-     El backend debe devolver:
-     { items: [...], total: number, page: number, totalPages: number }
-     Incluye rating (float, 0-5) y reviewCount (int) en cada item
-     para que las estrellas de las cards usen datos reales del servidor.
-  ═══════════════════════════════════════════════════════════ */
+  /* ── API ── */
   api: {
     async fetch(params) {
       // Delega a DataAPI — para Firebase solo cambia DataAPI.getListings()
@@ -3294,44 +3262,18 @@ function buildCardContactBtn(item) {
   </button>`;
 }
 
-/* ══ MODAL DE DETALLE + RESEÑAS ═══════════════════════════════
-   BACKEND — Reseñas:
-   · GET  /api/listings/:id/reviews → [{ author, rating, text, date }]
-   · POST /api/listings/:id/reviews → crea una reseña
-     Requiere header: Authorization: Bearer <token>
-   Para conectar:
-   1. getReviews(id) → reemplaza mock por await fetch(...)
-   2. submitReview() → cambia push local por POST real
-   3. Borra REVIEWS_MOCK y userReviews[] una vez activo
-══════════════════════════════════════════════════════════ */
+/* ══ MODAL DE DETALLE + RESEÑAS (Firestore) ══════════════════ */
 
 const WA_SVG = `<svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="white" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>`;
 
-/* ── Datos de reseñas mock — BORRAR cuando haya backend ── */
-const REVIEWS_MOCK = {
-  1: [
-    { author: 'Carlos M.',    rating: 5, text: 'Bicicleta en perfecto estado, llegó limpia y lista. El rentador fue muy puntual.', date: 'jun 2025' },
-    { author: 'Sofía R.',     rating: 4, text: 'Muy buena experiencia, solo el casco estaba un poco viejo pero funcional.', date: 'may 2025' },
-  ],
-  2: [
-    { author: 'Diego F.',     rating: 5, text: 'Cámara impecable, el lente venía perfectamente calibrado. Lo recomiendo.', date: 'jun 2025' },
-  ],
-  4: [
-    { author: 'Mariana G.',   rating: 4, text: 'El proyector funcionó de maravilla para mi presentación. Fácil de conectar.', date: 'abr 2025' },
-    { author: 'Luis A.',      rating: 5, text: 'Perfecto para la noche de cine. Lo renté dos veces.', date: 'mar 2025' },
-  ],
-  6: [
-    { author: 'Pamela T.',    rating: 5, text: 'Los niños lo amaron, el inflable es enorme y el soplador muy potente.', date: 'may 2025' },
-    { author: 'Roberto Q.',   rating: 3, text: 'Tardó un poco en llegar pero al final todo estuvo bien.', date: 'abr 2025' },
-    { author: 'Ana C.',       rating: 5, text: 'Excelente servicio, limpio y en buenas condiciones.', date: 'mar 2025' },
-  ],
-};
-const userReviews = {}; // reviews submitted this session
-
-function getReviews(id) {
-  const base = REVIEWS_MOCK[id] || [];
-  const user = userReviews[id] || [];
-  return [...base, ...user];
+async function getReviews(id) {
+  try {
+    const snap = await _db.collection('listings').doc(String(id)).collection('reviews')
+      .orderBy('createdAt', 'desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    return [];
+  }
 }
 
 function starsHTML(rating, size = 'sm') {
@@ -3345,8 +3287,8 @@ function avgRating(reviews) {
   return (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
 }
 
-function renderReviews(itemId) {
-  const reviews = getReviews(itemId);
+async function renderReviews(itemId) {
+  const reviews = await getReviews(itemId);
   const count   = reviews.length;
   const avg     = avgRating(reviews);
 
@@ -3374,17 +3316,25 @@ function renderReviews(itemId) {
         <div style="font-size:.8rem;color:var(--muted);font-style:normal">Sé el primero en opinar sobre este artículo.</div>
       </div>`;
   } else {
-    listEl.innerHTML = reviews.map(r => `
+    listEl.innerHTML = reviews.map(r => {
+      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      let dateStr = r.date || '';
+      if (r.createdAt?.toDate) {
+        const d = r.createdAt.toDate();
+        dateStr = `${months[d.getMonth()]} ${d.getFullYear()}`;
+      }
+      return `
       <div class="review-card">
         <div class="review-top">
           <div>
             <span class="review-author">${r.author}</span>
             <div class="review-stars">${starsHTML(r.rating)}</div>
           </div>
-          <span class="review-date">${r.date}</span>
+          <span class="review-date">${dateStr}</span>
         </div>
         <div class="review-text">${r.text}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   // Review form
@@ -3431,25 +3381,34 @@ function updateStarPicker(val, isHover) {
   });
 }
 
-function submitReview(itemId) {
+async function submitReview(itemId) {
   const text = document.getElementById('reviewText')?.value.trim();
   if (!_reviewRating) { alert('Selecciona una calificación.'); return; }
   if (!text || text.length < 5) { alert('Escribe un comentario.'); return; }
 
-  const user = Auth.user();
-  const name = user ? user.name.split(' ').slice(0, 2).join(' ') : 'Tú';
-  const now  = new Date();
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  const dateStr = `${months[now.getMonth()]} ${now.getFullYear()}`;
+  const btn = document.getElementById('btnSubmitReview');
+  btn.disabled = true; btn.textContent = 'Publicando…';
 
-  if (!userReviews[itemId]) userReviews[itemId] = [];
-  userReviews[itemId].unshift({ author: name, rating: _reviewRating, text, date: dateStr });
-
-  renderReviews(itemId);
-
-  // Scroll reviews into view smoothly
-  document.getElementById('reviewsList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  try {
+    const user = Auth.user();
+    const name = user ? user.name.split(' ').slice(0, 2).join(' ') : 'Anónimo';
+    await _db.collection('listings').doc(String(itemId)).collection('reviews').add({
+      author: name,
+      rating: _reviewRating,
+      text,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await renderReviews(itemId);
+    document.getElementById('reviewsList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    alert('No se pudo publicar la reseña. Intenta de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Publicar reseña'; }
+  }
 }
+
+/* ── Sesión 6: Set de IDs ya vistos esta sesión (evita doble conteo) ── */
+const _viewedIds = new Set();
 
 /* ── WA area: renders either the real button, edit button (owner), or the gate ── */
 function renderWaArea(item) {
@@ -3457,12 +3416,17 @@ function renderWaArea(item) {
 
   // Own listing → show edit shortcut instead of contact
   if (item._isOwn) {
+    const views    = item.views         ?? 0;
+    const waClicks = item.whatsappClicks ?? 0;
     area.innerHTML = `
       <button class="detail-wa-btn" style="background:var(--green-dark)"
         onclick="closeDetailModal(); editMyListing('${item.id}')"
         aria-label="Editar este anuncio">
         ✏️ Editar mi anuncio
-      </button>`;
+      </button>
+      <div style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:10px">
+        👁 ${views} vista${views !== 1 ? 's' : ''} &nbsp;·&nbsp; 💬 ${waClicks} contacto${waClicks !== 1 ? 's' : ''} por WhatsApp
+      </div>`;
     return;
   }
 
@@ -3472,7 +3436,8 @@ function renderWaArea(item) {
 
   if (Auth.isLoggedIn()) {
     area.innerHTML = `
-      <a class="detail-wa-btn" href="${waUrl}" target="_blank" rel="noopener">
+      <a class="detail-wa-btn" href="${waUrl}" target="_blank" rel="noopener"
+        onclick="_trackWaClick('${item.id}')">
         ${WA_SVG} Contactar por WhatsApp
       </a>`;
   } else {
@@ -3484,6 +3449,12 @@ function renderWaArea(item) {
         </button>
       </div>`;
   }
+}
+
+function _trackWaClick(id) {
+  _db.collection('listings').doc(String(id)).update({
+    whatsappClicks: firebase.firestore.FieldValue.increment(1)
+  }).catch(() => {});
 }
 
 /* ── Open / close ── */
@@ -3534,10 +3505,19 @@ document.getElementById('detailCarNext').addEventListener('click', () => _detCar
   }, { passive: true });
 })();
 
-function openDetailModal(id) {
-  const item = (Listings._state.items.find(i => i.id == id)) || MOCK_LISTINGS.find(i => i.id == id);
+async function openDetailModal(id) {
+  let item = Listings._state.items.find(i => i.id == id) || featuredItems.find(i => i.id == id);
+  if (!item) item = await DataAPI.getListingById(id);
   if (!item) return;
   _currentDetailId = id;
+
+  // ── Sesión 6: incrementar views (una vez por sesión) ────
+  if (!_viewedIds.has(String(id))) {
+    _viewedIds.add(String(id));
+    _db.collection('listings').doc(String(id)).update({
+      views: firebase.firestore.FieldValue.increment(1)
+    }).catch(() => {});
+  }
 
   const images = Array.isArray(item.images) && item.images.length
     ? item.images
@@ -3560,6 +3540,18 @@ function openDetailModal(id) {
   renderWaArea(item);
   renderReviews(id);
 
+  // ── Sesión 5: pushState URL ──────────────────────────────
+  const slug = item.slug || slugify(item.title) + '-' + id;
+  history.pushState({ detailId: id }, '', '/anuncio/' + slug);
+
+  // ── Sesión 5: meta tags dinámicos ───────────────────────
+  _updateMetaTags({
+    title:       `${item.title} — Rentalos`,
+    description: item.desc ? item.desc.slice(0, 155) : `Renta ${item.title} en Rentalos`,
+    image:       images[0],
+    url:         window.location.href,
+  });
+
   detailOverlay.classList.add('open');
   document.body.classList.add('detail-open');
   document.body.style.overflow = 'hidden';
@@ -3570,6 +3562,9 @@ function closeDetailModal() {
   detailOverlay.classList.remove('open');
   document.body.classList.remove('detail-open');
   document.body.style.overflow = '';
+  // ── Sesión 5: restaurar URL y meta tags ─────────────────
+  history.pushState(null, '', '/');
+  _resetMetaTags();
 }
 
 detailOverlay.addEventListener('click', e => {
@@ -3601,7 +3596,7 @@ function _onDetailAuthReturn() {
     _pendingDetailId = null;
     setTimeout(() => openDetailModal(id), 320);
   } else if (_currentDetailId && detailOverlay.classList.contains('open')) {
-    const item = (Listings._state.items.find(i => i.id == _currentDetailId)) || MOCK_LISTINGS.find(i => i.id == _currentDetailId);
+    const item = Listings._state.items.find(i => i.id == _currentDetailId) || featuredItems.find(i => i.id == _currentDetailId);
     if (item) { renderWaArea(item); renderReviewForm(_currentDetailId); }
   }
 }
@@ -3651,7 +3646,7 @@ window.addEventListener('scroll', () => {
 // ── Hero Carousel ──
 const WA_ICON_SM = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>`;
 
-const featuredItems = [MOCK_LISTINGS[0], MOCK_LISTINGS[1], MOCK_LISTINGS[3], MOCK_LISTINGS[5], MOCK_LISTINGS[7]];
+let featuredItems = [];
 let carouselIdx = 0;
 let carouselAutoplay = null;
 let carouselAnimating = false;
@@ -3704,11 +3699,22 @@ const slots = ['hc-prev', 'hc-center', 'hc-next'].map(cls => {
 
 function n(offset) {
   const len = featuredItems.length;
+  if (!len) return 0;
   return ((carouselIdx + offset) % len + len) % len;
 }
 
 // Fill slots with current content (no animation)
 function fillSlots() {
+  if (!featuredItems.length) {
+    slots[0].innerHTML = ''; slots[0].className = 'hc-card hc-prev';
+    slots[2].innerHTML = ''; slots[2].className = 'hc-card hc-next';
+    slots[1].className = 'hc-card hc-center';
+    slots[1].innerHTML = `<div style="padding:60px 24px;text-align:center;color:var(--muted)">
+      <div style="font-size:2.5rem;margin-bottom:10px">📦</div>
+      Sé el primero en publicar un artículo
+    </div>`;
+    return;
+  }
   slots[0].innerHTML = cardContent(featuredItems[n(-1)]);
   slots[1].innerHTML = cardContent(featuredItems[n(0)]);
   slots[2].innerHTML = cardContent(featuredItems[n(1)]);
@@ -3716,7 +3722,7 @@ function fillSlots() {
 
 // Animate to next (+1) or prev (-1)
 function advance(dir) {
-  if (carouselAnimating) return;
+  if (carouselAnimating || featuredItems.length < 2) return;
   carouselAnimating = true;
 
   if (dir > 0) {
@@ -3787,7 +3793,11 @@ window.addEventListener('pointerup', e => {
   resetAutoplay();
 }, { passive: true });
 
-function startAutoplay() { carouselAutoplay = setInterval(() => advance(1), 3600); }
+function startAutoplay() {
+  clearInterval(carouselAutoplay);
+  if (featuredItems.length < 2) return;
+  carouselAutoplay = setInterval(() => advance(1), 3600);
+}
 function resetAutoplay() { clearInterval(carouselAutoplay); startAutoplay(); }
 
 // ── Hero fade on scroll ──
@@ -3936,7 +3946,7 @@ function openModalEdit(item) {
   document.getElementById('f-unit').value  = item.unit  || 'día';
   document.getElementById('f-loc').value   = item.loc   || '';
   document.getElementById('f-name').value  = item.name  || '';
-  document.getElementById('f-phone').value = item.phone || '';
+  document.getElementById('f-phone').value = (item.phone || item.whatsapp || '').replace(/^521/, '');
   document.getElementById('desc-counter').textContent =
     `${(item.desc || '').length} / 400 caracteres`;
   // Fotos existentes: mostrar como previews no-removibles (ya están guardadas)
@@ -4155,34 +4165,6 @@ function buildPreview() {
   }
 }
 
-// ── Submit — PRODUCCIÓN ──────────────────────────────────────
-// Reemplaza el setTimeout por un fetch real:
-//
-//   async function submitModal() {
-//     btnNext.disabled = true; btnNext.textContent = 'Publicando…';
-//     const fd = new FormData();
-//     fd.append('title',  document.getElementById('f-title').value.trim());
-//     fd.append('cat',    document.getElementById('f-cat').value);
-//     fd.append('desc',   document.getElementById('f-desc').value.trim());
-//     fd.append('price',  document.getElementById('f-price').value);
-//     fd.append('unit',   document.getElementById('f-unit').value);
-//     fd.append('loc',    document.getElementById('f-loc').value.trim());
-//     fd.append('phone',  '+52' + document.getElementById('f-phone').value.replace(/\D/g,''));
-//     photoFiles.forEach(f => fd.append('photos[]', f));
-//     try {
-//       const res = await fetch(`${API_BASE}/listings`, {
-//         method: 'POST',
-//         headers: { Authorization: `Bearer ${Auth.token()}` },
-//         body: fd,
-//       });
-//       if (!res.ok) throw new Error('Error al publicar');
-//       bodyEl.style.display = 'none'; footer.style.display = 'none';
-//       successEl.classList.add('active');
-//       await Listings.init(); // refresca la grid
-//     } catch (err) { alert(err.message); }
-//     finally { btnNext.disabled = false; }
-//   }
-//
 // Comprime un File/Blob a base64 usando canvas (máx 800px, calidad 0.75)
 function compressPhoto(file) {
   return new Promise(resolve => {
@@ -4207,75 +4189,80 @@ function compressPhoto(file) {
 async function submitModal() {
   btnNext.disabled = true;
   btnNext.textContent = _editId ? 'Actualizando…' : 'Publicando…';
-  // Separar fotos nuevas (File) de las existentes (objetos _existing)
-  const newFiles = photoFiles.filter(f => !f._existing);
-  const existingUrls = photoFiles.filter(f => f._existing).map(f => f._existing);
-  // TODO: Firebase Storage — reemplazar compressPhoto por subida a Storage
-  const newUrls = await Promise.all(newFiles.map(compressPhoto));
-  const images = [...existingUrls, ...newUrls];
+  try {
+    const newFiles = photoFiles.filter(f => !f._existing);
+    const existingUrls = photoFiles.filter(f => f._existing).map(f => f._existing);
+    const newUrls = await Promise.all(newFiles.map(compressPhoto));
+    const images = [...existingUrls, ...newUrls];
 
-  const data = {
-    title: document.getElementById('f-title').value.trim(),
-    cat:   document.getElementById('f-cat').value,
-    desc:  document.getElementById('f-desc').value.trim(),
-    price: Number(document.getElementById('f-price').value),
-    unit:  document.getElementById('f-unit').value || 'día',
-    loc:   document.getElementById('f-loc').value.trim(),
-    phone: document.getElementById('f-phone').value.replace(/\D/g,''),
-    images,
-  };
+    const phoneDigits = document.getElementById('f-phone').value.replace(/\D/g,'');
+    const data = {
+      title: document.getElementById('f-title').value.trim(),
+      cat:   document.getElementById('f-cat').value,
+      desc:  document.getElementById('f-desc').value.trim(),
+      price: Number(document.getElementById('f-price').value),
+      unit:  document.getElementById('f-unit').value || 'día',
+      loc:   document.getElementById('f-loc').value.trim(),
+      phone:    '521' + phoneDigits,
+      whatsapp: '521' + phoneDigits,
+      images,
+    };
 
-  if (_editId) {
-    await DataAPI.updateListing(_editId, data);
-  } else {
-    await DataAPI.createListing(data);
+    if (_editId) {
+      await DataAPI.updateListing(_editId, data);
+    } else {
+      await DataAPI.createListing(data);
+    }
+    Listings.init().then(() => {
+      featuredItems = Listings._state.items.slice(0, 5);
+      fillSlots();
+      startAutoplay();
+    });
+    bodyEl.style.display = 'none';
+    footer.style.display = 'none';
+    successEl.classList.add('active');
+  } catch (e) {
+    _showToast(e.message || 'Ocurrió un error. Intenta de nuevo.');
+  } finally {
+    btnNext.disabled = false;
+    btnNext.textContent = _editId ? '✓ Actualizar anuncio' : '✓ Publicar anuncio';
   }
-  bodyEl.style.display = 'none';
-  footer.style.display = 'none';
-  successEl.classList.add('active');
-  btnNext.disabled = false;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   AUTH LAYER
-   ─────────────────────────────────────────────────────────────
-   Capa de autenticación lista para conectar a backend.
-
-   ╔══ CÓMO CONECTAR ══════════════════════════════════════════╗
-   â•'                                                            â•'
-   â•'  1. Cambia API_BASE (abajo) a tu URL real.                 â•'
-   â•'     Ej: const API_BASE = 'https://api.rentalos.mx';        â•'
-   â•'                                                            â•'
-   ║  2. En cada método de Auth.api.*, descomenta el bloque     ║
-   ║     "PRODUCCIÓN" y borra el bloque "SIMULACIÓN".           ║
-   â•'                                                            â•'
-   â•'  Respuesta esperada del backend en login y register:       â•'
-   â•'  { token: string, user: {                                  â•'
-   â•'      id: string, name: string, email: string,              â•'
-   â•'      phone: string, avatar?: string (URL)                  â•'
-   â•'  }}                                                        â•'
-   â•'                                                            â•'
-   â•'  Flujo de token:                                           â•'
-   ║  · Se guarda en localStorage como 'rnt_token' y 'rnt_user' ║
-   ║  · Cada request autenticado lleva:                         ║
-   â•'    Authorization: Bearer <token>                           â•'
-   ║  · Al refrescar la página Auth.init() restaura la sesión   ║
-   â•'                                                            â•'
-   â•'  OAuth (Google / Facebook):                                â•'
-   ║  · Opción A: redirect → window.location = /api/auth/google ║
-   â•'    El backend redirige de vuelta con ?token=... en la URL  â•'
-   ║  · Opción B: popup OAuth2 PKCE (recomendado en SPA)        ║
-   ╚════════════════════════════════════════════════════════════╝
+   AUTH LAYER — Firebase Auth
 ══════════════════════════════════════════════════════════════ */
-
-const API_BASE = '/api'; // ← cambia esto a tu URL de backend
 
 /* ══════════════════════════════════════════════════════════════
-   DataAPI — capa de abstracción de datos
-   Para conectar Firebase: reemplaza el interior de cada método.
-   La UI nunca toca localStorage ni MOCK_LISTINGS directamente.
+   DataAPI — capa de abstracción de datos (Firestore)
 ══════════════════════════════════════════════════════════════ */
 /* ── Photo upload helpers ── */
+/* ══════════════════════════════════════════
+   SLUGIFY — genera un slug limpio para URLs
+   Normaliza acentos, espacios, caracteres especiales
+══════════════════════════════════════════ */
+function slugify(text) {
+  return text
+    .toString()
+    .normalize('NFD')                        // descompone caracteres acentuados
+    .replace(/[\u0300-\u036f]/g, '')         // elimina marcas diacríticas
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')           // solo letras, números, espacios y guiones
+    .trim()
+    .replace(/\s+/g, '-')                    // espacios → guiones
+    .replace(/-+/g, '-')                     // guiones múltiples → uno
+    .slice(0, 60);                           // máx 60 chars
+}
+
+function _shortId() {
+  // 6 chars alfanuméricos aleatorios
+  return Math.random().toString(36).slice(2, 8);
+}
+
+function _generateSlug(title) {
+  return slugify(title) + '-' + _shortId();
+}
+
 function _dataURLtoBlob(dataURL) {
   const [header, data] = dataURL.split(',');
   const mime = header.match(/:(.*?);/)[1];
@@ -4284,12 +4271,19 @@ function _dataURLtoBlob(dataURL) {
   for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
   return new Blob([arr], { type: mime });
 }
-async function _uploadPhoto(src, listingId, idx) {
-  if (typeof src === 'string' && src.startsWith('http')) return src;
+async function _uploadToCloudinary(src) {
+  if (typeof src === 'string' && src.startsWith('http')) return src; // ya subida
   const blob = src.startsWith('data:') ? _dataURLtoBlob(src) : src;
-  const ref  = _storage.ref(`listings/${listingId}/photo_${idx}_${Date.now()}`);
-  const snap = await ref.put(blob, { contentType: 'image/jpeg' });
-  return snap.ref.getDownloadURL();
+  const fd = new FormData();
+  fd.append('file', blob);
+  fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: fd,
+  });
+  if (!res.ok) throw new Error('Error al subir imagen a Cloudinary');
+  const data = await res.json();
+  return data.secure_url;
 }
 
 const DataAPI = {
@@ -4299,12 +4293,14 @@ const DataAPI = {
     try {
       const snap = await _db.collection('listings').orderBy('createdAt', 'desc').get();
       fsItems = snap.docs.map(d => ({ id: d.id, ...d.data(), _isOwn: d.data().ownerId === uid }));
-    } catch (e) { console.warn('Firestore getListings:', e.message); }
-    let results = [...fsItems, ...MOCK_LISTINGS];
+    } catch (e) {
+      _showToast('Error al cargar los anuncios. Verifica tu conexión.');
+    }
+    let results = fsItems;
     if (cat) results = results.filter(l => l.cat === cat);
     if (q)   results = results.filter(l =>
-      l.title.toLowerCase().includes(q.toLowerCase()) ||
-      l.desc.toLowerCase().includes(q.toLowerCase())
+      l.title?.toLowerCase().includes(q.toLowerCase()) ||
+      l.desc?.toLowerCase().includes(q.toLowerCase())
     );
     const total      = results.length;
     const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -4316,8 +4312,10 @@ const DataAPI = {
     try {
       const doc = await _db.collection('listings').doc(String(id)).get();
       if (doc.exists) return { id: doc.id, ...doc.data(), _isOwn: doc.data().ownerId === uid };
-    } catch {}
-    return MOCK_LISTINGS.find(i => i.id == id) || null;
+    } catch (e) {
+      _showToast('No se pudo cargar el anuncio.');
+    }
+    return null;
   },
 
   async getMyListings() {
@@ -4326,36 +4324,47 @@ const DataAPI = {
     try {
       const snap = await _db.collection('listings').where('ownerId', '==', uid).get();
       return snap.docs.map(d => ({ id: d.id, ...d.data(), _isOwn: true }));
-    } catch (e) { console.warn('Firestore getMyListings:', e.message); return []; }
+    } catch (e) {
+      _showToast('Error al cargar tus anuncios.');
+      return [];
+    }
   },
 
   async createListing(data) {
     const uid = _auth.currentUser?.uid;
     const { images: photoData, ...rest } = data;
-    const docRef = await _db.collection('listings').add({
-      ...rest, ownerId: uid, images: [],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    const imageUrls = await Promise.all(photoData.map((src, i) => _uploadPhoto(src, docRef.id, i)));
-    await docRef.update({ images: imageUrls });
-    return { id: docRef.id, ...rest, images: imageUrls, ownerId: uid, _isOwn: true };
+    const slug = _generateSlug(data.title || 'articulo');
+    try {
+      const docRef = await _db.collection('listings').add({
+        ...rest, ownerId: uid, images: [], slug,
+        views: 0, whatsappClicks: 0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      const imageUrls = await Promise.all(photoData.map(src => _uploadToCloudinary(src)));
+      await docRef.update({ images: imageUrls });
+      return { id: docRef.id, ...rest, slug, images: imageUrls, ownerId: uid, views: 0, whatsappClicks: 0, _isOwn: true };
+    } catch (e) {
+      throw new Error(e.message || 'No se pudo publicar el anuncio.');
+    }
   },
 
   async updateListing(id, data) {
-    const { images: photoData, ...rest } = data;
-    const imageUrls = await Promise.all(photoData.map((src, i) => _uploadPhoto(src, String(id), i)));
-    await _db.collection('listings').doc(String(id)).update({ ...rest, images: imageUrls });
+    try {
+      const { images: photoData, ...rest } = data;
+      const imageUrls = await Promise.all(photoData.map(src => _uploadToCloudinary(src)));
+      await _db.collection('listings').doc(String(id)).update({ ...rest, images: imageUrls });
+    } catch (e) {
+      throw new Error(e.message || 'No se pudo actualizar el anuncio.');
+    }
   },
 
   async deleteListing(id) {
+    // Imágenes en Cloudinary no se borran (requiere API secret desde backend)
     try {
-      const doc = await _db.collection('listings').doc(String(id)).get();
-      if (doc.exists) {
-        const urls = doc.data().images || [];
-        await Promise.allSettled(urls.map(url => firebase.storage().refFromURL(url).delete()));
-      }
-    } catch {}
-    await _db.collection('listings').doc(String(id)).delete();
+      await _db.collection('listings').doc(String(id)).delete();
+    } catch (e) {
+      throw new Error(e.message || 'No se pudo eliminar el anuncio.');
+    }
   },
 };
 
@@ -4402,30 +4411,7 @@ const AuthAPI = {
 };
 
 
-const MyListings = {
-  _key: 'rnt_my_listings',
 
-  getAll() {
-    try { return JSON.parse(localStorage.getItem(this._key) || '[]'); }
-    catch { return []; }
-  },
-
-  save(item) {
-    const arr = this.getAll();
-    arr.unshift(item);
-    localStorage.setItem(this._key, JSON.stringify(arr));
-  },
-
-  remove(id) {
-    const arr = this.getAll().filter(i => i.id !== id);
-    localStorage.setItem(this._key, JSON.stringify(arr));
-  },
-
-  update(id, data) {
-    const arr = this.getAll().map(i => i.id === id ? { ...i, ...data } : i);
-    localStorage.setItem(this._key, JSON.stringify(arr));
-  },
-};
 
 function openMyListings() {
   document.getElementById('navDropdown')?.classList.remove('open');
@@ -4459,12 +4445,15 @@ async function renderMyListings() {
     const price = typeof item.price === 'number'
       ? `$${item.price.toLocaleString('es-MX')} / ${item.unit}`
       : '';
+    const views    = item.views         ?? 0;
+    const waClicks = item.whatsappClicks ?? 0;
     return `
       <div class="my-listing-card">
         <div class="my-listing-thumb">${imgHTML}</div>
         <div class="my-listing-info">
           <div class="my-listing-title">${item.title}</div>
           <div class="my-listing-meta">${item.cat}${price ? ' · ' + price : ''}${item.loc ? ' · 📍 ' + item.loc : ''}</div>
+          <div style="font-size:.74rem;color:var(--muted);margin-top:3px">👁 ${views} · 💬 ${waClicks}</div>
         </div>
         <div class="my-listing-actions">
           <button class="my-listing-edit" onclick="editMyListing('${item.id}')" aria-label="Editar anuncio">Editar</button>
@@ -4476,8 +4465,20 @@ async function renderMyListings() {
 
 async function deleteMyListing(id) {
   if (!confirm('¿Eliminar este anuncio?')) return;
-  await DataAPI.deleteListing(id);
-  renderMyListings();
+  const btn = document.querySelector(`.my-listing-del[onclick*="${id}"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Eliminando…'; }
+  try {
+    await DataAPI.deleteListing(id);
+    renderMyListings();
+    Listings.init().then(() => {
+      featuredItems = Listings._state.items.slice(0, 5);
+      fillSlots();
+      startAutoplay();
+    });
+  } catch (e) {
+    _showToast(e.message || 'No se pudo eliminar el anuncio.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Eliminar'; }
+  }
 }
 
 async function editMyListing(id) {
@@ -4530,6 +4531,39 @@ async function saveProfile() {
 function openLegal(id) { _openSimpleModal(id); }
 function closeLegal(id) { _closeSimpleModal(id); }
 
+/* ── Verificación de correo ── */
+function openVerifyEmailModal() {
+  document.getElementById('verifyEmailAddr').textContent = Auth.user()?.email || '';
+  document.getElementById('verifyEmailMsg').textContent = '';
+  _openSimpleModal('verifyEmailModal');
+}
+function closeVerifyEmailModal() { _closeSimpleModal('verifyEmailModal'); }
+
+async function resendVerificationEmail() {
+  const btn = document.getElementById('btnResendVerify');
+  const msg = document.getElementById('verifyEmailMsg');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    await _auth.currentUser?.sendEmailVerification();
+    msg.textContent = '✓ Correo enviado. Revisa tu bandeja (y spam).';
+  } catch (err) {
+    msg.textContent = err.message || 'No se pudo enviar el correo.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reenviar correo de verificación';
+  }
+}
+
+async function checkVerifiedAndContinue() {
+  const msg = document.getElementById('verifyEmailMsg');
+  const verified = await Auth.refreshEmailVerified();
+  if (verified) {
+    closeVerifyEmailModal();
+    _openModalOriginal();
+  } else {
+    msg.textContent = 'Tu correo aún no aparece como verificado. Revisa tu bandeja e intenta de nuevo.';
+  }
+}
+
 /* ── Helpers comunes ── */
 function _openSimpleModal(id) {
   document.getElementById(id).classList.add('open');
@@ -4540,14 +4574,14 @@ function _closeSimpleModal(id) {
   document.body.style.overflow = '';
 }
 
-['profileModal','termsModal','privacyModal'].forEach(id => {
+['profileModal','termsModal','privacyModal','verifyEmailModal'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => {
     if (e.target === document.getElementById(id)) _closeSimpleModal(id);
   });
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  ['profileModal','termsModal','privacyModal'].forEach(id => {
+  ['profileModal','termsModal','privacyModal','verifyEmailModal'].forEach(id => {
     if (document.getElementById(id).classList.contains('open')) _closeSimpleModal(id);
   });
 });
@@ -4567,7 +4601,7 @@ const Auth = {
             const token = await fbUser.getIdToken();
             const snap  = await _db.collection('users').doc(fbUser.uid).get();
             const profile = snap.exists ? snap.data() : { name: fbUser.email, email: fbUser.email, phone: '' };
-            this._session = { token, user: { id: fbUser.uid, ...profile } };
+            this._session = { token, user: { id: fbUser.uid, ...profile }, emailVerified: fbUser.emailVerified };
           } catch { this._session = null; }
         } else {
           this._session = null;
@@ -4577,6 +4611,17 @@ const Auth = {
       });
     });
   },
+
+  /* ── ¿Correo verificado? (refresca desde Firebase) ── */
+  async refreshEmailVerified() {
+    const fbUser = _auth.currentUser;
+    if (!fbUser) return false;
+    await fbUser.reload();
+    if (this._session) this._session.emailVerified = fbUser.emailVerified;
+    return fbUser.emailVerified;
+  },
+
+  isEmailVerified() { return !!this._session?.emailVerified; },
 
   /* ── ¿Hay sesión activa? ── */
   isLoggedIn() { return !!this._session; },
@@ -4589,7 +4634,7 @@ const Auth = {
 
   /* ── Guarda sesión después de login/register ── */
   _saveSession(token, user) {
-    this._session = { token, user };
+    this._session = { token, user, emailVerified: !!_auth.currentUser?.emailVerified };
     localStorage.setItem('rnt_token', token);
     localStorage.setItem('rnt_user', JSON.stringify(user));
     this._renderNav();
@@ -4623,7 +4668,7 @@ const Auth = {
           <div class="nav-dropdown" id="navDropdown">
             <div class="nav-dropdown-header">
               <div class="nav-dropdown-name">${u.name}</div>
-              <div class="nav-dropdown-email">${u.email}</div>
+              <div class="nav-dropdown-email">${u.email}${this.isEmailVerified() ? '' : ' · <span style="color:#dc2626">sin verificar</span>'}</div>
             </div>
             <div class="nav-dropdown-divider"></div>
             <button class="nav-dropdown-item" onclick="Auth._toggleUserMenu(); openMyListings()">
@@ -4687,8 +4732,11 @@ const Auth = {
   _confirmLogout() {
     document.getElementById('navDropdown')?.classList.remove('open');
     this.logout();
-    Listings.init();
-    fillSlots();
+    Listings.init().then(() => {
+      featuredItems = Listings._state.items.slice(0, 5);
+      fillSlots();
+      startAutoplay();
+    });
   },
 
   /* ══ API CALLS ══════════════════════════════════════════════
@@ -4709,8 +4757,12 @@ const Auth = {
 
     async register({ name, email, phone, password }) {
       const cred = await _auth.createUserWithEmailAndPassword(email, password);
-      const profile = { name, email, phone, avatar: null };
+      const profile = {
+        uid: cred.user.uid, name, email, phone, avatar: null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
       await _db.collection('users').doc(cred.user.uid).set(profile);
+      try { await cred.user.sendEmailVerification(); } catch {}
       const token = await cred.user.getIdToken();
       return { token, user: { id: cred.user.uid, ...profile } };
     },
@@ -4732,8 +4784,10 @@ const Auth = {
       const snap  = await _db.collection('users').doc(cred.user.uid).get();
       if (!snap.exists) {
         await _db.collection('users').doc(cred.user.uid).set({
+          uid: cred.user.uid,
           name: cred.user.displayName || cred.user.email,
           email: cred.user.email, phone: '', avatar: cred.user.photoURL || null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
       const profile = (await _db.collection('users').doc(cred.user.uid).get()).data();
@@ -4741,6 +4795,32 @@ const Auth = {
     },
   },
 };
+
+/* ── Toast de error global ── */
+function _showToast(msg, type = 'error') {
+  let toast = document.getElementById('_globalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = '_globalToast';
+    toast.style.cssText = `
+      position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#1f2937;color:white;padding:11px 20px;border-radius:10px;
+      font-size:.84rem;font-weight:600;z-index:9999;opacity:0;
+      transition:opacity 220ms,transform 220ms;pointer-events:none;
+      max-width:90vw;text-align:center;`;
+    document.body.appendChild(toast);
+  }
+  if (type === 'success') toast.style.background = '#16a34a';
+  else toast.style.background = '#1f2937';
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 3500);
+}
 
 /* ── Utilidad ── */
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -4929,7 +5009,8 @@ async function submitRegister() {
   btn.disabled = true; btn.textContent = 'Creando cuenta…';
   try {
     const data = await Auth.api.register({ name: name.trim(), email, phone: '+52' + phone, password: pass });
-    _onAuthSuccess(data, '¡Cuenta creada!', 'Ya puedes publicar artículos y contactar rentadores.');
+    _onAuthSuccess(data, '¡Cuenta creada!',
+      `Te enviamos un correo de verificación a ${email.trim()}. Verifícalo para poder publicar artículos.`);
   } catch (err) {
     showAuthError(err.message || 'No se pudo crear la cuenta. Intenta de nuevo.');
   } finally {
@@ -4981,11 +5062,16 @@ function showAuthSuccessUI(title, msg) {
 
 // Sobreescribir openModal para agregar el guard
 const _openModalOriginal = openModal;
-window.openModal = function() {
+window.openModal = async function() {
   if (!Auth.isLoggedIn()) {
     // Guarda la intención para continuar después de login
     _pendingAction = 'publish';
     openAuthModal('login');
+    return;
+  }
+  const verified = await Auth.refreshEmailVerified();
+  if (!verified) {
+    openVerifyEmailModal();
     return;
   }
   _openModalOriginal();
@@ -5004,11 +5090,82 @@ window.closeAuthModal = function() {
     _pendingAction = null;
   }
 };
+/* ══════════════════════════════════════════
+   SESIÓN 5 — Meta tags dinámicos + routing por URL
+══════════════════════════════════════════ */
+
+const _defaultTitle = document.title;
+const _defaultDesc  = 'Renta cualquier cosa cerca de ti. Bicicletas, cámaras, herramientas, inflables y más.';
+
+function _setOrCreateMeta(selector, attr, value) {
+  let el = document.querySelector(selector);
+  if (!el) {
+    el = document.createElement('meta');
+    // Inferir si es property o name del selector
+    if (selector.includes('property=')) {
+      el.setAttribute('property', selector.match(/property="([^"]+)"/)[1]);
+    } else if (selector.includes('name=')) {
+      el.setAttribute('name', selector.match(/name="([^"]+)"/)[1]);
+    }
+    document.head.appendChild(el);
+  }
+  el.setAttribute(attr, value);
+}
+
+function _updateMetaTags({ title, description, image, url }) {
+  document.title = title;
+  _setOrCreateMeta('meta[name="description"]',         'content', description);
+  _setOrCreateMeta('meta[property="og:title"]',        'content', title);
+  _setOrCreateMeta('meta[property="og:description"]',  'content', description);
+  _setOrCreateMeta('meta[property="og:image"]',        'content', image || '');
+  _setOrCreateMeta('meta[property="og:url"]',          'content', url   || window.location.href);
+  _setOrCreateMeta('meta[property="og:type"]',         'content', 'product');
+}
+
+function _resetMetaTags() {
+  document.title = _defaultTitle;
+  _setOrCreateMeta('meta[name="description"]',         'content', _defaultDesc);
+  _setOrCreateMeta('meta[property="og:title"]',        'content', _defaultTitle);
+  _setOrCreateMeta('meta[property="og:description"]',  'content', _defaultDesc);
+  _setOrCreateMeta('meta[property="og:image"]',        'content', '');
+  _setOrCreateMeta('meta[property="og:url"]',          'content', window.location.origin + '/');
+  _setOrCreateMeta('meta[property="og:type"]',         'content', 'website');
+}
+
+/* ── Detectar /anuncio/<slug>-<id> al cargar la página ── */
+function _getDetailIdFromPath() {
+  const match = window.location.pathname.match(/^\/anuncio\/.*-([a-zA-Z0-9]+)$/);
+  return match ? match[1] : null;
+}
+
+/* ── Manejar botón "atrás" del navegador ── */
+window.addEventListener('popstate', (e) => {
+  if (window.location.pathname === '/' || window.location.pathname === '') {
+    if (detailOverlay.classList.contains('open')) {
+      detailOverlay.classList.remove('open');
+      document.body.classList.remove('detail-open');
+      document.body.style.overflow = '';
+      _resetMetaTags();
+    }
+  } else {
+    const id = _getDetailIdFromPath();
+    if (id) openDetailModal(id);
+  }
+});
+
 /* ── Inicializar sesión al cargar — await Firebase auth state ── */
-Auth.init().then(() => {
-  Listings.init();
+Auth.init().then(async () => {
+  await Listings.init();
+  featuredItems = Listings._state.items.slice(0, 5);
   fillSlots();
   startAutoplay();
+
+  // ── Sesión 5: abrir detalle si la URL tiene /anuncio/<slug>-<id> ──
+  const idFromUrl = _getDetailIdFromPath();
+  if (idFromUrl) {
+    // Pequeño delay para que la UI esté lista
+    setTimeout(() => openDetailModal(idFromUrl), 400);
+  }
 });
 
 /* ══════════════════════════════════════════
